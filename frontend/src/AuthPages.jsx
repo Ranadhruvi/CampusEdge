@@ -128,9 +128,9 @@ export default function AuthPages({ initialMode = 'login', onAuthSuccess }) {
       const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
       const isLocalhost = API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1');
       if (isHttps && isLocalhost) {
-        showError('Cannot reach backend: VITE_API_URL is missing or pointing to localhost. Please configure your live backend URL in your deployment settings.');
+        showError(`Cannot reach backend: Frontend is on HTTPS, but VITE_API_URL is set to "${API_BASE}". Set your live backend URL in your deployment settings.`);
       } else {
-        showError('Unable to connect to the backend server. Please verify the backend is online and reachable.');
+        showError(`Unable to connect to backend at ${API_BASE}. Please verify the backend is online and reachable.`);
       }
     }
     setSubmitting(false);
