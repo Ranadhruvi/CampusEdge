@@ -64,9 +64,12 @@ app.use((req, res, next) => {
 });
 
 // Dynamic Environment-Driven CORS Middleware
-const allowedOrigins = process.env.CLIENT_URL 
-  ? process.env.CLIENT_URL.split(',').map(s => s.trim().replace(/\/$/, '')) 
-  : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5000', 'http://127.0.0.1:5000'];
+const rawOrigins = process.env.CLIENT_URL || process.env.FRONTEND_URL || '';
+const configuredOrigins = rawOrigins
+  ? rawOrigins.split(',').map(s => s.trim().replace(/\/$/, '')) 
+  : [];
+const defaultLocalOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5000', 'http://127.0.0.1:5000'];
+const allowedOrigins = [...new Set([...configuredOrigins, ...defaultLocalOrigins])];
 
 const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
 

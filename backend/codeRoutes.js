@@ -884,11 +884,22 @@ except Exception as e:
     sys.exit(1)
 `;
 
-  const child = spawnSync('python', ['-c', runnerScript], {
+  const primaryPythonCmd = process.env.PYTHON_CMD || (process.platform === 'win32' ? 'python' : 'python3');
+  let child = spawnSync(primaryPythonCmd, ['-c', runnerScript], {
     timeout: timeoutMs,
     encoding: 'utf-8',
     maxBuffer: 1024 * 1024
   });
+
+  // If ENOENT, try fallback between python and python3
+  if (child.error && child.error.code === 'ENOENT') {
+    const fallbackCmd = primaryPythonCmd === 'python' ? 'python3' : 'python';
+    child = spawnSync(fallbackCmd, ['-c', runnerScript], {
+      timeout: timeoutMs,
+      encoding: 'utf-8',
+      maxBuffer: 1024 * 1024
+    });
+  }
 
   if (child.error && child.error.code === 'ETIMEDOUT') {
     return { passed: false, actual: 'Time Limit Exceeded (3000ms)', error: 'Time Limit Exceeded', logs: [] };
