@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode in Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* =========================================================
+   GLOBAL BASE & ANIMATIONS
+   ========================================================= */
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-float {
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-flow 6s ease infinite;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.6);
+}
+
+/* Base Body Styles */
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+  background-color: #f8fafc;
+  color: #0f172a;
+  background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.04) 0px, transparent 50%),
+                    radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.04) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+.dark body,
+html.dark body {
+  background-color: #020617;
+  color: #f8fafc;
+  background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+                    radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.08) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Glassmorphism & Card Glow Styles */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.12), 0 8px 10px -6px rgba(99, 102, 241, 0.08);
+}
+
+/* Button Shine Effect */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.25) 25%,
+    transparent 30%
+  );
+  transform: rotate(30deg);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.btn-shine:hover::after {
+  transform: rotate(30deg) translate(50%, 50%);
+}
+
+/* Accent Glow Badges */
+.badge-glow-indigo {
+  box-shadow: 0 0 15px -3px rgba(99, 102, 241, 0.35);
+}
+
+.badge-glow-emerald {
+  box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.35);
+}
+
+.badge-glow-purple {
+  box-shadow: 0 0 15px -3px rgba(168, 85, 247, 0.35);
+}
+
+/* Global Selection styling */
+::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: inherit;
+}
+
+/* CTA Banner & Primary Buttons */
+.cta-banner,
+.cta-banner h1,
+.cta-banner h2,
+.cta-banner h3,
+.cta-banner h4,
+.cta-banner p,
+.cta-banner span {
+  color: #ffffff !important;
+}
+
+.cta-banner button.bg-white,
+.cta-banner button.bg-white span {
+  color: #312e81 !important;
+}
