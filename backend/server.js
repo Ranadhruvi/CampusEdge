@@ -181,9 +181,19 @@ function cleanAndParseAIJson(rawText, fallback = {}) {
 // REAL-TIME STUDENT STREAK & GAMIFICATION API
 // ==========================================
 
-// Ensure student_streaks table exists on startup
+const { seed: seedQuestionBank } = require('./scripts/seedQuestions');
+
+// Comprehensive database initialization and self-healing schema execution
 (async () => {
   try {
+    const schemaPath = path.join(__dirname, 'schema.sql');
+    if (fs.existsSync(schemaPath)) {
+      const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+      await pool.query(schemaSql);
+      console.log('✅ Core database schema (users, circulars, questions, test_history) verified and ready.');
+    }
+
+    // Proctoring and streak table updates
     await pool.query(`
       CREATE TABLE IF NOT EXISTS student_streaks (
         id SERIAL PRIMARY KEY,
@@ -202,9 +212,19 @@ function cleanAndParseAIJson(rawText, fallback = {}) {
       ALTER TABLE interview_history ADD COLUMN IF NOT EXISTS tab_switches INT DEFAULT 0;
       ALTER TABLE interview_history ADD COLUMN IF NOT EXISTS tab_switch_logs JSONB;
     `);
-    console.log('student_streaks, test_history and interview_history tables ready with proctoring support.');
+
+    // Check if question bank has data; if empty, automatically seed 1,000+ placement questions
+    const qCountRes = await pool.query('SELECT COUNT(*) as total FROM questions');
+    const totalQ = parseInt(qCountRes.rows[0].total, 10);
+    if (totalQ === 0) {
+      console.log('🌱 No questions found in database. Automatically seeding 1,000+ placement questions...');
+      await seedQuestionBank(false);
+      console.log('🎉 Question bank automatically seeded for students!');
+    } else {
+      console.log(`📚 Database active with ${totalQ} placement questions.`);
+    }
   } catch (e) {
-    console.warn('Note on table init:', e.message);
+    console.warn('⚠️ Table init/seeding note:', e.message);
   }
 })();
 

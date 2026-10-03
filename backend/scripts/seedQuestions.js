@@ -1010,7 +1010,7 @@ function generateCompleteQuestionBank() {
   return allGenerated;
 }
 
-async function seed() {
+async function seed(shouldExit = false) {
   try {
     console.log("🌱 Connecting to PostgreSQL to seed interview questions...");
     const allQuestions = generateCompleteQuestionBank();
@@ -1037,11 +1037,17 @@ async function seed() {
     const totalCountRes = await pool.query(`SELECT COUNT(*) as total FROM questions;`);
     console.log(`✅ Success! Inserted ${insertedCount} new questions.`);
     console.log(`🎉 Total questions now in Question Bank: ${totalCountRes.rows[0].total}`);
-    process.exit(0);
+    if (shouldExit) process.exit(0);
+    return { insertedCount, total: totalCountRes.rows[0].total };
   } catch (err) {
     console.error("❌ Seeding error:", err);
-    process.exit(1);
+    if (shouldExit) process.exit(1);
+    throw err;
   }
 }
 
-seed();
+if (require.main === module) {
+  seed(true);
+}
+
+module.exports = { seed, generateCompleteQuestionBank };
