@@ -125,7 +125,13 @@ export default function AuthPages({ initialMode = 'login', onAuthSuccess }) {
       }
     } catch (err) {
       console.error('Authentication error:', err);
-      showError('Unable to connect to the backend server. Please verify backend is running on port 5000.');
+      const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+      const isLocalhost = API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1');
+      if (isHttps && isLocalhost) {
+        showError('Cannot reach backend: VITE_API_URL is missing or pointing to localhost. Please configure your live backend URL in your deployment settings.');
+      } else {
+        showError('Unable to connect to the backend server. Please verify the backend is online and reachable.');
+      }
     }
     setSubmitting(false);
   };
