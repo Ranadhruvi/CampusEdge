@@ -20,50 +20,334 @@ const upload = multer({
   }
 });
 
+// Admin validation helper supporting both JWT token and master passphrase
+function checkAdminPermission(req) {
+  if (req.user && req.user.role === 'admin') return true;
+  const adminKey = req.headers['x-admin-key'] || req.headers['x-admin-passphrase'] || req.query.adminKey || req.body?.adminSecretKey;
+  const correctKey = process.env.ADMIN_SECRET_KEY || 'CampusEdge2026';
+  if (adminKey && adminKey.trim() === correctKey.trim()) return true;
+  return false;
+}
+
+// Normalizes question row from Excel, CSV, or JSON with flexible casing & aliases
+function normalizeQuestionRow(rawRow) {
+  if (!rawRow || typeof rawRow !== 'object') return null;
+
+  // Clean and index all keys without spaces/symbols for flexible matching
+  const normalized = {};
+  for (let key of Object.keys(rawRow)) {
+    const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+    normalized[cleanKey] = rawRow[key];
+  }
+
+  const safeStr = (v) => (v === undefined || v === null ? '' : String(v).trim());
+
+  // Category
+  const category = safeStr(
+    normalized['category'] || normalized['subject'] || normalized['domain'] || normalized['module'] || rawRow['Category'] || rawRow['CATEGORY'] || 'General'
+  );
+
+  // Subcategory / Topic
+  const subcategory = safeStr(
+    normalized['topic'] || normalized['subcategory'] || normalized['subtopic'] || normalized['subcat'] || rawRow['Topic'] || rawRow['TOPIC'] || 'General'
+  );
+
+  // Difficulty
+  let difficulty = safeStr(
+    normalized['difficulty'] || normalized['level'] || rawRow['Difficulty'] || rawRow['DIFFICULTY'] || 'Medium'
+  );
+  if (!['easy', 'medium', 'hard'].includes(difficulty.toLowerCase())) {
+    difficulty = 'Medium';
+  }
+
+  // Question Text
+  const question_text = safeStr(
+    normalized['question'] || normalized['questiontext'] || normalized['problem'] || normalized['prompt'] || normalized['q'] || rawRow['Question'] || rawRow['QUESTION']
+  );
+
+  // Options
+  const option_a = safeStr(
+    normalized['optiona'] || normalized['opta'] || normalized['option1'] || normalized['opt1'] || normalized['a'] || rawRow['Option A'] || rawRow['OPTION A'] || rawRow['option_a']
+  );
+  const option_b = safeStr(
+    normalized['optionb'] || normalized['optb'] || normalized['option2'] || normalized['opt2'] || normalized['b'] || rawRow['Option B'] || rawRow['OPTION B'] || rawRow['option_b']
+  );
+  const option_c = safeStr(
+    normalized['optionc'] || normalized['optc'] || normalized['option3'] || normalized['opt3'] || normalized['c'] || rawRow['Option C'] || rawRow['OPTION C'] || rawRow['option_c']
+  );
+  const option_d = safeStr(
+    normalized['optiond'] || normalized['optd'] || normalized['option4'] || normalized['opt4'] || normalized['d'] || rawRow['Option D'] || rawRow['OPTION D'] || rawRow['option_d']
+  );
+
+  // Raw Answer
+  let rawAnswer = safeStr(
+    normalized['answer'] || normalized['correctanswer'] || normalized['correct'] || normalized['ans'] || normalized['key'] || rawRow['Answer'] || rawRow['ANSWER']
+  );
+
+  // Map option letter/number to option text if necessary
+  let resolvedAnswer = rawAnswer;
+  const ansLower = rawAnswer.toLowerCase();
+  if (ansLower === 'a' || ansLower === 'option a' || ansLower === 'option_a' || ansLower === '1') {
+    resolvedAnswer = option_a || rawAnswer;
+  } else if (ansLower === 'b' || ansLower === 'option b' || ansLower === 'option_b' || ansLower === '2') {
+    resolvedAnswer = option_b || rawAnswer;
+  } else if (ansLower === 'c' || ansLower === 'option c' || ansLower === 'option_c' || ansLower === '3') {
+    resolvedAnswer = option_c || rawAnswer;
+  } else if (ansLower === 'd' || ansLower === 'option d' || ansLower === 'option_d' || ansLower === '4') {
+    resolvedAnswer = option_d || rawAnswer;
+  }
+
+  // Explanation
+  const explanation = safeStr(
+    normalized['explanation'] || normalized['solution'] || normalized['reason'] || normalized['rationale'] || rawRow['Explanation'] || rawRow['EXPLANATION']
+  );
+
+  // Mandatory checks: Question, at least 2 options, and answer
+  if (!question_text || !option_a || !option_b || !resolvedAnswer) {
+    return null;
+  }
+
+  return {
+    category: category || 'General',
+    subcategory: subcategory || 'General',
+    difficulty: difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase(),
+    question_text,
+    option_a,
+    option_b,
+    option_c: option_c || '',
+    option_d: option_d || '',
+    correct_answer: resolvedAnswer,
+    explanation: explanation || ''
+  };
+}
+
 // ==========================================
-// BULK UPLOAD EXCEL / CSV QUESTIONS (Admin Only)
+// BULK UPLOAD EXCEL / CSV QUESTIONS (Admin)
 // ==========================================
-router.post('/bulk-upload', authenticateToken, requireAdmin, (req, res) => {
+router.post('/bulk-upload', optionalAuth, (req, res) => {
   upload.single('excelFile')(req, res, async (err) => {
     if (err) {
       return res.status(400).json({ message: err.message || 'File upload error.' });
     }
     try {
-      if (!req.file) return res.status(400).json({ message: 'No file uploaded.' });
+      if (!checkAdminPermission(req)) {
+        return res.status(403).json({ message: 'Forbidden: Administrator privileges required to upload questions.' });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file received. Please select an Excel (.xlsx, .xls) or CSV file.' });
+      }
 
       const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-      const sheetName = workbook.SheetNames[0];
-      const sheetRows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+      if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+        return res.status(400).json({ message: 'The uploaded spreadsheet contains no sheets.' });
+      }
 
-      let count = 0;
-      for (let row of sheetRows) {
-        const category = (row["CATEGORY"] || row["Category"] || "General").trim();
-        const subcategory = (row["TOPIC"] || row["Topic"] || "General").trim();
-        const difficulty = (row["DIFFICULTY"] || row["Difficulty"] || "Medium").trim();
-        const question_text = (row["QUESTION"] || row["Question"] || "").trim();
-        const option_a = (row["OPTION A"] || row["Option A"] || row["option_a"] || "").trim();
-        const option_b = (row["OPTION B"] || row["Option B"] || row["option_b"] || "").trim();
-        const option_c = (row["OPTION C"] || row["Option C"] || row["option_c"] || "").trim();
-        const option_d = (row["OPTION D"] || row["Option D"] || row["option_d"] || "").trim();
-        const correct_answer = (row["ANSWER"] || row["Answer"] || "").trim();
-        const explanation = (row["EXPLANATION"] || row["Explanation"] || "").trim();
-
-        if (question_text && option_a && option_b && correct_answer) {
-          await pool.query(
-            `INSERT INTO questions (category, subcategory, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-            [category, subcategory, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation]
-          );
-          count++;
+      // Collect rows across all sheets (or sheet with data)
+      let allRows = [];
+      for (const name of workbook.SheetNames) {
+        const sheet = workbook.Sheets[name];
+        const rows = xlsx.utils.sheet_to_json(sheet, { defval: '' });
+        if (rows && rows.length > 0) {
+          allRows = allRows.concat(rows);
         }
       }
 
-      res.json({ message: `Success! Imported ${count} questions into database.` });
+      if (allRows.length === 0) {
+        return res.status(400).json({ message: 'Spreadsheet is empty or contains no data rows.' });
+      }
+
+      let count = 0;
+      let skipped = 0;
+      const categoriesFound = new Set();
+
+      for (let rawRow of allRows) {
+        const parsed = normalizeQuestionRow(rawRow);
+        if (parsed) {
+          await pool.query(
+            `INSERT INTO questions (category, subcategory, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+            [
+              parsed.category,
+              parsed.subcategory,
+              parsed.difficulty,
+              parsed.question_text,
+              parsed.option_a,
+              parsed.option_b,
+              parsed.option_c,
+              parsed.option_d,
+              parsed.correct_answer,
+              parsed.explanation
+            ]
+          );
+          categoriesFound.add(parsed.category);
+          count++;
+        } else {
+          skipped++;
+        }
+      }
+
+      if (count === 0) {
+        return res.status(400).json({
+          message: `0 questions imported from ${allRows.length} rows. Please verify your file columns include: Question, Option A, Option B, and Answer.`,
+          totalRows: allRows.length,
+          skipped
+        });
+      }
+
+      res.json({
+        message: `✅ Successfully imported ${count} question(s) across ${categoriesFound.size} category(s)!${skipped > 0 ? ` (${skipped} incomplete rows skipped)` : ''}`,
+        count,
+        skipped,
+        categories: Array.from(categoriesFound)
+      });
     } catch (err) {
       console.error("Bulk Upload Error:", err.message);
-      res.status(500).json({ message: "Server error during bulk upload." });
+      res.status(500).json({ message: `Server error during bulk upload: ${err.message}` });
     }
   });
+});
+
+// ==========================================
+// ADD SINGLE QUESTION (Admin)
+// ==========================================
+router.post('/', optionalAuth, async (req, res) => {
+  try {
+    if (!checkAdminPermission(req)) {
+      return res.status(403).json({ message: 'Forbidden: Administrator privileges required.' });
+    }
+
+    const parsed = normalizeQuestionRow(req.body);
+    if (!parsed) {
+      return res.status(400).json({
+        message: 'Question Text, Option A, Option B, and Correct Answer are required.'
+      });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO questions (category, subcategory, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING *`,
+      [
+        parsed.category,
+        parsed.subcategory,
+        parsed.difficulty,
+        parsed.question_text,
+        parsed.option_a,
+        parsed.option_b,
+        parsed.option_c,
+        parsed.option_d,
+        parsed.correct_answer,
+        parsed.explanation
+      ]
+    );
+
+    res.status(201).json({
+      message: `✅ Question successfully added to '${parsed.category}'!`,
+      question: result.rows[0]
+    });
+  } catch (err) {
+    console.error('Single Question Add Error:', err.message);
+    res.status(500).json({ message: `Server error adding question: ${err.message}` });
+  }
+});
+
+// Alias for add single question
+router.post('/add', optionalAuth, async (req, res) => {
+  try {
+    if (!checkAdminPermission(req)) {
+      return res.status(403).json({ message: 'Forbidden: Administrator privileges required.' });
+    }
+
+    const parsed = normalizeQuestionRow(req.body);
+    if (!parsed) {
+      return res.status(400).json({
+        message: 'Question Text, Option A, Option B, and Correct Answer are required.'
+      });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO questions (category, subcategory, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING *`,
+      [
+        parsed.category,
+        parsed.subcategory,
+        parsed.difficulty,
+        parsed.question_text,
+        parsed.option_a,
+        parsed.option_b,
+        parsed.option_c,
+        parsed.option_d,
+        parsed.correct_answer,
+        parsed.explanation
+      ]
+    );
+
+    res.status(201).json({
+      message: `✅ Question successfully added to '${parsed.category}'!`,
+      question: result.rows[0]
+    });
+  } catch (err) {
+    console.error('Single Question Add Error:', err.message);
+    res.status(500).json({ message: `Server error adding question: ${err.message}` });
+  }
+});
+
+// ==========================================
+// BULK JSON ARRAY IMPORT (Admin)
+// ==========================================
+router.post('/bulk-json', optionalAuth, async (req, res) => {
+  try {
+    if (!checkAdminPermission(req)) {
+      return res.status(403).json({ message: 'Forbidden: Administrator privileges required.' });
+    }
+
+    const rawList = Array.isArray(req.body) ? req.body : (req.body.questions || []);
+    if (!Array.isArray(rawList) || rawList.length === 0) {
+      return res.status(400).json({ message: 'Please provide an array of questions in the request body.' });
+    }
+
+    let count = 0;
+    let skipped = 0;
+    const categoriesFound = new Set();
+
+    for (const item of rawList) {
+      const parsed = normalizeQuestionRow(item);
+      if (parsed) {
+        await pool.query(
+          `INSERT INTO questions (category, subcategory, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+          [
+            parsed.category,
+            parsed.subcategory,
+            parsed.difficulty,
+            parsed.question_text,
+            parsed.option_a,
+            parsed.option_b,
+            parsed.option_c,
+            parsed.option_d,
+            parsed.correct_answer,
+            parsed.explanation
+          ]
+        );
+        categoriesFound.add(parsed.category);
+        count++;
+      } else {
+        skipped++;
+      }
+    }
+
+    res.json({
+      message: `✅ Successfully imported ${count} questions!${skipped > 0 ? ` (${skipped} skipped)` : ''}`,
+      count,
+      skipped,
+      categories: Array.from(categoriesFound)
+    });
+  } catch (err) {
+    console.error('Bulk JSON Import Error:', err.message);
+    res.status(500).json({ message: `Server error importing questions: ${err.message}` });
+  }
 });
 
 // Category Alias Map

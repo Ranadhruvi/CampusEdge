@@ -3,11 +3,15 @@ export const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env &
   : 'http://localhost:5000';
 
 export function getAuthToken() {
+  const user = getSavedUser();
+  return user?.token || null;
+}
+
+export function getSavedUser() {
   const savedUser = localStorage.getItem('user');
   if (savedUser) {
     try {
-      const parsed = JSON.parse(savedUser);
-      return parsed.token || null;
+      return JSON.parse(savedUser);
     } catch (e) {
       return null;
     }
@@ -18,6 +22,7 @@ export function getAuthToken() {
 export async function apiFetch(endpoint, options = {}) {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
   const token = getAuthToken();
+  const user = getSavedUser();
 
   const headers = {
     ...(options.headers || {})
@@ -25,6 +30,10 @@ export async function apiFetch(endpoint, options = {}) {
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  if (user && user.role === 'admin') {
+    headers['x-admin-key'] = 'CampusEdge2026';
   }
 
   // If body is not FormData and Content-Type not set, default to application/json

@@ -86,6 +86,27 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
   const [file, setFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState('');
   const [questions, setQuestions] = useState([]);
+
+  // Single Question Creation Modal States
+  const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
+  const [newQuestionCategory, setNewQuestionCategory] = useState('');
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
+  const [newQuestionSubcategory, setNewQuestionSubcategory] = useState('');
+  const [newQuestionDifficulty, setNewQuestionDifficulty] = useState('Medium');
+  const [newQuestionText, setNewQuestionText] = useState('');
+  const [newOptionA, setNewOptionA] = useState('');
+  const [newOptionB, setNewOptionB] = useState('');
+  const [newOptionC, setNewOptionC] = useState('');
+  const [newOptionD, setNewOptionD] = useState('');
+  const [newCorrectOption, setNewCorrectOption] = useState('A');
+  const [newExplanation, setNewExplanation] = useState('');
+  const [isSubmittingQuestion, setIsSubmittingQuestion] = useState(false);
+
+  // Bulk Paste JSON Modal States
+  const [showPasteJsonModal, setShowPasteJsonModal] = useState(false);
+  const [pasteJsonContent, setPasteJsonContent] = useState('');
+  const [isSubmittingJson, setIsSubmittingJson] = useState(false);
   
   // Bulk Delete States for Questions
   const [selectedQuestionIds, setSelectedQuestionIds] = useState([]);
@@ -364,7 +385,7 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
   const handleBulkUpload = async (e) => {
     e.preventDefault();
     if (!file) {
-      showWarning('Please select an Excel or CSV file first.');
+      showWarning('Please select an Excel (.xlsx, .xls) or CSV (.csv) file first.');
       return;
     }
 
@@ -372,7 +393,7 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
     formData.append('excelFile', file);
 
     try {
-      setUploadStatus('Uploading & importing questions...');
+      setUploadStatus('Uploading & importing questions into database...');
       const response = await apiFetch('/api/questions/bulk-upload', {
         method: 'POST',
         body: formData,
@@ -383,15 +404,128 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
         setUploadStatus(data.message);
         fetchQuestions(); 
         setFile(null); 
-        e.target.reset();
+        if (e.target) e.target.reset();
       } else {
         showError(data.message || 'Upload failed.');
-        setUploadStatus('Upload failed.');
+        setUploadStatus(data.message || 'Upload failed.');
       }
     } catch (err) {
-      showError('Network error uploading file.');
-      setUploadStatus('Upload failed.');
+      showError('Network error uploading file: ' + err.message);
+      setUploadStatus('Upload failed: ' + err.message);
     }
+  };
+
+  const handleCreateSingleQuestion = async (e, addAnother = false) => {
+    if (e) e.preventDefault();
+    const finalCategory = isCustomCategory ? customCategoryInput.trim() : (newQuestionCategory || 'General').trim();
+    if (!finalCategory) {
+      showWarning('Please select or enter a Category.');
+      return;
+    }
+    if (!newQuestionText.trim()) {
+      showWarning('Question prompt cannot be empty.');
+      return;
+    }
+    if (!newOptionA.trim() || !newOptionB.trim()) {
+      showWarning('Option A and Option B are required.');
+      return;
+    }
+
+    let resolvedAnswer = newOptionA.trim();
+    if (newCorrectOption === 'B') resolvedAnswer = newOptionB.trim();
+    else if (newCorrectOption === 'C') resolvedAnswer = newOptionC.trim() || newOptionA.trim();
+    else if (newCorrectOption === 'D') resolvedAnswer = newOptionD.trim() || newOptionA.trim();
+
+    setIsSubmittingQuestion(true);
+    try {
+      const response = await apiFetch('/api/questions', {
+        method: 'POST',
+        body: JSON.stringify({
+          category: finalCategory,
+          subcategory: newQuestionSubcategory.trim() || 'General',
+          difficulty: newQuestionDifficulty,
+          question_text: newQuestionText.trim(),
+          option_a: newOptionA.trim(),
+          option_b: newOptionB.trim(),
+          option_c: newOptionC.trim(),
+          option_d: newOptionD.trim(),
+          correct_answer: resolvedAnswer,
+          explanation: newExplanation.trim()
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        showSuccess(data.message || 'Question added successfully!');
+        fetchQuestions();
+        if (addAnother) {
+          setNewQuestionText('');
+          setNewOptionA('');
+          setNewOptionB('');
+          setNewOptionC('');
+          setNewOptionD('');
+          setNewExplanation('');
+          setNewCorrectOption('A');
+        } else {
+          setShowAddQuestionModal(false);
+          setNewQuestionText('');
+          setNewOptionA('');
+          setNewOptionB('');
+          setNewOptionC('');
+          setNewOptionD('');
+          setNewExplanation('');
+          setNewCorrectOption('A');
+        }
+      } else {
+        showError(data.message || 'Failed to save question.');
+      }
+    } catch (err) {
+      console.error('Error creating question:', err);
+      showError('Network error while saving question.');
+    }
+    setIsSubmittingQuestion(false);
+  };
+
+  const handleBulkJsonSubmit = async (e) => {
+    e.preventDefault();
+    if (!pasteJsonContent.trim()) {
+      showWarning('Please paste JSON data first.');
+      return;
+    }
+
+    let parsedList;
+    try {
+      parsedList = JSON.parse(pasteJsonContent);
+    } catch (err) {
+      showError('Invalid JSON format. Please verify syntax (must be a valid JSON array).');
+      return;
+    }
+
+    if (!Array.isArray(parsedList) || parsedList.length === 0) {
+      showWarning('JSON must be a non-empty array of questions: [ { "question": "...", ... } ]');
+      return;
+    }
+
+    setIsSubmittingJson(true);
+    try {
+      const response = await apiFetch('/api/questions/bulk-json', {
+        method: 'POST',
+        body: JSON.stringify({ questions: parsedList })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        showSuccess(data.message || `Successfully imported ${data.count} questions!`);
+        fetchQuestions();
+        setShowPasteJsonModal(false);
+        setPasteJsonContent('');
+      } else {
+        showError(data.message || 'Failed to import JSON questions.');
+      }
+    } catch (err) {
+      console.error('Error uploading JSON questions:', err);
+      showError('Network error uploading JSON questions.');
+    }
+    setIsSubmittingJson(false);
   };
 
   const toggleSelectAllQuestions = (e) => {
@@ -538,17 +672,61 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
   };
 
   const downloadTemplate = () => {
-    const templateData = [{
-      "CATEGORY": "JavaScript", "TOPIC": "Variables", "DIFFICULTY": "Easy",
-      "QUESTION": "What keyword is used to declare a block-scoped variable in modern JS?",
-      "OPTION A": "var", "OPTION B": "let", "OPTION C": "function", "OPTION D": "int",
-      "ANSWER": "let", "EXPLANATION": "let is block-scoped in ES6."
-    }];
+    const templateData = [
+      {
+        "CATEGORY": "JavaScript",
+        "TOPIC": "Variables & Scope",
+        "DIFFICULTY": "Easy",
+        "QUESTION": "What keyword is used to declare a block-scoped reassignable variable in modern JS?",
+        "OPTION A": "let",
+        "OPTION B": "var",
+        "OPTION C": "const",
+        "OPTION D": "static",
+        "ANSWER": "let",
+        "EXPLANATION": "'let' is block-scoped and allows reassignment, introduced in ES6."
+      },
+      {
+        "CATEGORY": "Database Management & SQL",
+        "TOPIC": "SQL Joins",
+        "DIFFICULTY": "Medium",
+        "QUESTION": "Which JOIN returns all rows from both tables whether there is a match or not?",
+        "OPTION A": "INNER JOIN",
+        "OPTION B": "FULL OUTER JOIN",
+        "OPTION C": "LEFT JOIN",
+        "OPTION D": "CROSS JOIN",
+        "ANSWER": "FULL OUTER JOIN",
+        "EXPLANATION": "FULL OUTER JOIN returns all rows from both left and right tables."
+      },
+      {
+        "CATEGORY": "Data Structures & Algorithms",
+        "TOPIC": "Binary Search",
+        "DIFFICULTY": "Easy",
+        "QUESTION": "What is the average time complexity of Binary Search on a sorted array of size N?",
+        "OPTION A": "O(N)",
+        "OPTION B": "O(log N)",
+        "OPTION C": "O(N log N)",
+        "OPTION D": "O(1)",
+        "ANSWER": "O(log N)",
+        "EXPLANATION": "Binary Search cuts the search space in half at each iteration: O(log N)."
+      },
+      {
+        "CATEGORY": "Operating Systems",
+        "TOPIC": "Deadlocks",
+        "DIFFICULTY": "Hard",
+        "QUESTION": "Which of the following is NOT one of Coffman's four conditions for deadlock?",
+        "OPTION A": "Mutual Exclusion",
+        "OPTION B": "Hold and Wait",
+        "OPTION C": "Preemption Allowed",
+        "OPTION D": "Circular Wait",
+        "ANSWER": "Preemption Allowed",
+        "EXPLANATION": "The condition is No Preemption (resources cannot be forcibly taken)."
+      }
+    ];
     const worksheet = XLSX.utils.json_to_sheet(templateData);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
-    XLSX.writeFile(workbook, "CampusEdge_Upload_Template.xlsx");
-    showInfo("Template downloaded.");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "QuestionBank_Template");
+    XLSX.writeFile(workbook, "CampusEdge_QuestionBank_Template.xlsx");
+    showInfo("Excel template downloaded with sample questions!");
   };
 
   const filteredQuestions = questions.filter((q) => {
@@ -833,6 +1011,298 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
                   <button type="submit" className="px-6 py-2.5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md cursor-pointer">Save Changes</button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Add Single Question Modal */}
+        {showAddQuestionModal && (
+          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-6 sm:p-8 animate-fade-in max-h-[90vh] overflow-y-auto text-slate-900 dark:text-white space-y-5">
+              
+              {/* Header */}
+              <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 text-white font-black text-lg flex items-center justify-center shadow-md">
+                    ➕
+                  </div>
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">Create New Question</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Add an interactive multiple-choice question to the placement repository.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAddQuestionModal(false)}
+                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold text-xl cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={(e) => handleCreateSingleQuestion(e, false)} className="space-y-4">
+                
+                {/* Category & Topic Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Category / Subject *</label>
+                      <button
+                        type="button"
+                        onClick={() => setIsCustomCategory(!isCustomCategory)}
+                        className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                      >
+                        {isCustomCategory ? 'Choose Existing' : '+ Custom Category'}
+                      </button>
+                    </div>
+
+                    {isCustomCategory ? (
+                      <input
+                        type="text"
+                        value={customCategoryInput}
+                        onChange={(e) => setCustomCategoryInput(e.target.value)}
+                        placeholder="e.g. Next.js, Golang, System Design"
+                        required
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-hidden focus:border-indigo-500"
+                      />
+                    ) : (
+                      <select
+                        value={newQuestionCategory}
+                        onChange={(e) => setNewQuestionCategory(e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-hidden focus:border-indigo-500 cursor-pointer"
+                      >
+                        <option value="">-- Select Category --</option>
+                        {[...new Set(questions.map(q => q.category).filter(Boolean))].map((cat, i) => (
+                          <option key={i} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Topic / Subcategory</label>
+                    <input
+                      type="text"
+                      value={newQuestionSubcategory}
+                      onChange={(e) => setNewQuestionSubcategory(e.target.value)}
+                      placeholder="e.g. Arrays, SQL Joins, Concurrency"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-hidden focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Difficulty Selector */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Difficulty Level</label>
+                  <div className="flex gap-2">
+                    {['Easy', 'Medium', 'Hard'].map((lvl) => (
+                      <button
+                        type="button"
+                        key={lvl}
+                        onClick={() => setNewQuestionDifficulty(lvl)}
+                        className={`flex-1 py-2 text-xs font-bold rounded-xl border transition cursor-pointer ${
+                          newQuestionDifficulty === lvl
+                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        {lvl}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Question Text */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Question Prompt *</label>
+                  <textarea
+                    rows={3}
+                    value={newQuestionText}
+                    onChange={(e) => setNewQuestionText(e.target.value)}
+                    placeholder="Enter the question clearly. Supports code snippets and technical text..."
+                    required
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-xs text-slate-900 dark:text-white outline-hidden focus:border-indigo-500 leading-relaxed font-sans"
+                  />
+                </div>
+
+                {/* Multiple Choice Options */}
+                <div className="space-y-2.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Answer Options & Correct Key *</label>
+                    <span className="text-[10px] text-slate-400">Click the letter chip to mark correct answer</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {[
+                      { key: 'A', label: 'Option A *', val: newOptionA, setVal: setNewOptionA, req: true },
+                      { key: 'B', label: 'Option B *', val: newOptionB, setVal: setNewOptionB, req: true },
+                      { key: 'C', label: 'Option C', val: newOptionC, setVal: setNewOptionC, req: false },
+                      { key: 'D', label: 'Option D', val: newOptionD, setVal: setNewOptionD, req: false }
+                    ].map((opt) => (
+                      <div key={opt.key} className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setNewCorrectOption(opt.key)}
+                          className={`w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shrink-0 transition cursor-pointer ${
+                            newCorrectOption === opt.key
+                              ? 'bg-emerald-500 text-white shadow-xs scale-105'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'
+                          }`}
+                          title={`Mark Option ${opt.key} as correct answer`}
+                        >
+                          {newCorrectOption === opt.key ? '✓' : opt.key}
+                        </button>
+
+                        <input
+                          type="text"
+                          value={opt.val}
+                          onChange={(e) => opt.setVal(e.target.value)}
+                          placeholder={`${opt.label} text`}
+                          required={opt.req}
+                          className={`flex-1 bg-slate-50 dark:bg-slate-800 border rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-hidden ${
+                            newCorrectOption === opt.key ? 'border-emerald-500 ring-1 ring-emerald-500/30' : 'border-slate-300 dark:border-slate-700'
+                          }`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Explanation */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Explanation & Rationale</label>
+                  <textarea
+                    rows={2}
+                    value={newExplanation}
+                    onChange={(e) => setNewExplanation(e.target.value)}
+                    placeholder="Provide candidate-facing explanation for why this answer is correct..."
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-xs text-slate-900 dark:text-white outline-hidden focus:border-indigo-500"
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddQuestionModal(false)}
+                    className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-xl cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={isSubmittingQuestion}
+                      onClick={(e) => handleCreateSingleQuestion(e, true)}
+                      className="px-4 py-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/30 hover:bg-indigo-100 rounded-xl cursor-pointer disabled:opacity-50"
+                    >
+                      Save & Add Another
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmittingQuestion}
+                      className="px-6 py-2.5 text-xs font-black text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-md shadow-emerald-600/20 rounded-xl cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                    >
+                      {isSubmittingQuestion ? 'Saving...' : 'Save to Question Bank ➔'}
+                    </button>
+                  </div>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Bulk Paste JSON Modal */}
+        {showPasteJsonModal && (
+          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-6 sm:p-8 animate-fade-in max-h-[90vh] overflow-y-auto text-slate-900 dark:text-white space-y-4">
+              
+              <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-500 text-white font-black text-lg flex items-center justify-center shadow-md">
+                    📋
+                  </div>
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">Paste JSON Question Bank</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Import structured question arrays directly without an Excel file.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPasteJsonModal(false)}
+                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold text-xl cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">JSON Question Array</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasteJsonContent(JSON.stringify([
+                      {
+                        category: "JavaScript",
+                        subcategory: "ES6 Methods",
+                        difficulty: "Easy",
+                        question: "Which array method returns a new array with all elements that pass the test implemented by the provided function?",
+                        option_a: "filter()",
+                        option_b: "map()",
+                        option_c: "forEach()",
+                        option_d: "reduce()",
+                        answer: "filter()",
+                        explanation: "filter() creates a shallow copy of a portion of a given array, filtered down to just elements that pass the test."
+                      },
+                      {
+                        category: "Database Management & SQL",
+                        subcategory: "Transactions",
+                        difficulty: "Medium",
+                        question: "In database ACID properties, what does the letter 'I' stand for?",
+                        option_a: "Integrity",
+                        option_b: "Isolation",
+                        option_c: "Iteration",
+                        option_d: "Indexing",
+                        answer: "Isolation",
+                        explanation: "Isolation ensures concurrent transactions execute without interfering with one another."
+                      }
+                    ], null, 2));
+                  }}
+                  className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                >
+                  + Load Sample JSON
+                </button>
+              </div>
+
+              <textarea
+                rows={10}
+                value={pasteJsonContent}
+                onChange={(e) => setPasteJsonContent(e.target.value)}
+                placeholder='[ { "category": "JavaScript", "question": "...", "option_a": "...", "option_b": "...", "answer": "..." } ]'
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-2xl p-4 text-xs font-mono text-slate-900 dark:text-white outline-hidden focus:border-indigo-500 leading-relaxed"
+              />
+
+              <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowPasteJsonModal(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isSubmittingJson || !pasteJsonContent.trim()}
+                  onClick={handleBulkJsonSubmit}
+                  className="px-6 py-2.5 text-xs font-black text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-md shadow-indigo-600/20 rounded-xl cursor-pointer disabled:opacity-50"
+                >
+                  {isSubmittingJson ? 'Importing...' : 'Parse & Import Questions ➔'}
+                </button>
+              </div>
+
             </div>
           </div>
         )}
@@ -1347,34 +1817,58 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
               </div>
             </div>
 
-            {/* Upload Box */}
-            <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-5">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            {/* Question Bank Operations Box */}
+            <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 font-black text-sm flex items-center justify-center">
                       📥
                     </span>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white">Bulk Question Import Engine</h2>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white">Question Bank Hub</h2>
                   </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">Upload .xlsx, .xls, or .csv sheets directly to populate question categories with explanations.</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">Add questions manually one-by-one, upload spreadsheets (.xlsx, .xls, .csv), or paste JSON data directly.</p>
                 </div>
-                <button 
-                  onClick={downloadTemplate} 
-                  className="text-xs font-black text-indigo-700 dark:text-indigo-300 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 border border-indigo-300 dark:border-indigo-500/40 px-4 py-2.5 rounded-2xl transition cursor-pointer shadow-xs flex items-center gap-2"
-                >
-                  <span>📊</span>
-                  <span>Download Excel Template</span>
-                </button>
+
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <button 
+                    onClick={() => {
+                      setNewQuestionCategory(questions[0]?.category || 'JavaScript');
+                      setIsCustomCategory(false);
+                      setShowAddQuestionModal(true);
+                    }}
+                    className="text-xs font-black text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 px-4 py-2.5 rounded-2xl transition cursor-pointer shadow-md shadow-emerald-600/20 flex items-center gap-2"
+                  >
+                    <span>➕</span>
+                    <span>Add Single Question</span>
+                  </button>
+
+                  <button 
+                    onClick={() => setShowPasteJsonModal(true)}
+                    className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 px-3.5 py-2.5 rounded-2xl transition cursor-pointer shadow-xs flex items-center gap-1.5"
+                  >
+                    <span>📋</span>
+                    <span>Paste JSON Bank</span>
+                  </button>
+
+                  <button 
+                    onClick={downloadTemplate} 
+                    className="text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 border border-indigo-300 dark:border-indigo-500/40 px-3.5 py-2.5 rounded-2xl transition cursor-pointer shadow-xs flex items-center gap-1.5"
+                  >
+                    <span>📊</span>
+                    <span>Excel Template</span>
+                  </button>
+                </div>
               </div>
 
+              {/* Excel / CSV Drop Zone */}
               <div className="bg-slate-50/70 dark:bg-slate-950/70 border-2 border-dashed border-indigo-300 dark:border-indigo-500/30 hover:border-indigo-500 dark:hover:border-indigo-400 rounded-3xl p-6 sm:p-8 text-center transition-all duration-300">
                 <form onSubmit={handleBulkUpload} className="flex flex-col items-center max-w-md mx-auto">
                   <div className="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-500/40 text-indigo-600 dark:text-indigo-400 text-2xl flex items-center justify-center mb-3 shadow-inner">
                     📁
                   </div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">Select Excel / CSV Spreadsheet</p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">Supports Question, Option A-D, Answer Key, Explanation</p>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">Bulk Upload Excel (.xlsx, .xls) or CSV (.csv)</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">Any column casing accepted: Question, Option A-D, Answer Key, Explanation</p>
 
                   <input 
                     type="file" 
@@ -1387,14 +1881,30 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
                     className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-8 py-3 rounded-xl font-black text-xs transition cursor-pointer shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2"
                   >
                     <span>⚡</span>
-                    <span>Upload & Parse Into Database ➔</span>
+                    <span>Upload & Import Spreadsheet Into Bank ➔</span>
                   </button>
                 </form>
+
                 {uploadStatus && (
                   <div className="mt-4 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/30 text-xs font-black text-indigo-700 dark:text-indigo-300 inline-block animate-fade-in">
                     {uploadStatus}
                   </div>
                 )}
+
+                {/* Supported Headers Legend */}
+                <div className="mt-5 pt-4 border-t border-slate-200/80 dark:border-slate-800/80 text-[11px] text-slate-500 dark:text-slate-400 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5">
+                  <span className="font-bold text-slate-700 dark:text-slate-300">Accepted Columns:</span>
+                  <span className="bg-slate-200/80 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[10px]">Category</span>
+                  <span className="bg-slate-200/80 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[10px]">Topic</span>
+                  <span className="bg-slate-200/80 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[10px]">Difficulty</span>
+                  <span className="bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-500/30 px-2 py-0.5 rounded font-mono text-[10px] font-bold">Question *</span>
+                  <span className="bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-500/30 px-2 py-0.5 rounded font-mono text-[10px] font-bold">Option A *</span>
+                  <span className="bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-500/30 px-2 py-0.5 rounded font-mono text-[10px] font-bold">Option B *</span>
+                  <span className="bg-slate-200/80 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[10px]">Option C</span>
+                  <span className="bg-slate-200/80 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[10px]">Option D</span>
+                  <span className="bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30 px-2 py-0.5 rounded font-mono text-[10px] font-bold">Answer *</span>
+                  <span className="bg-slate-200/80 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[10px]">Explanation</span>
+                </div>
               </div>
             </div>
 
