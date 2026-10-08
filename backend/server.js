@@ -115,8 +115,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
-// Pre-flight OPTIONS handling
-app.options('*', cors());
+// Pre-flight OPTIONS handling is automatically handled by app.use(cors(...)) above
 
 // Root ping & Health Check endpoints
 app.get('/', (req, res) => {
