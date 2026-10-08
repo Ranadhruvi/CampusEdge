@@ -407,8 +407,24 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
               </button>
             </div>
 
+            {/* Live Candidate Grid Heartbeat Pill (Matching Admin Style) */}
+            {!isSidebarCollapsed && (
+              <div className="mx-3 mt-4 mb-2 flex items-center justify-between px-3 py-2 rounded-2xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Live Grid Engine</span>
+                </div>
+                <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/40 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  SYNCED
+                </span>
+              </div>
+            )}
+
             {/* Navigation Items (Categorized & Scannable) */}
-            <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+            <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
               {navSections.map((section, idx) => (
                 <div key={idx} className="space-y-1">
                   {!isSidebarCollapsed && (
@@ -428,10 +444,10 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                           playSound('click');
                         }}
                         title={item.label}
-                        className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-2.5 rounded-2xl font-bold text-xs transition-all duration-150 cursor-pointer group ${
+                        className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-2.5 rounded-2xl font-bold text-xs transition-all duration-200 cursor-pointer group ${
                           isActive
-                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-600/30'
-                            : 'text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                            ? 'bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 text-white shadow-lg shadow-indigo-600/30 scale-[1.02]'
+                            : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -439,9 +455,9 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                           {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
                         </div>
                         {!isSidebarCollapsed && item.badge && (
-                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full font-mono ${
                             isActive 
-                              ? 'bg-white/20 text-white' 
+                              ? 'bg-white/20 text-white shadow-xs' 
                               : 'bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-indigo-400'
                           }`}>
                             {item.badge}
@@ -453,6 +469,26 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                 </div>
               ))}
             </nav>
+
+            {/* Candidate Telemetry & Readiness Card (Matching Admin System Telemetry) */}
+            {!isSidebarCollapsed && (
+              <div className="mx-3 my-2 p-3.5 rounded-2xl bg-gradient-to-br from-indigo-50/50 via-purple-50/30 to-slate-50 dark:from-indigo-950/30 dark:via-purple-950/20 dark:to-slate-900/50 border border-indigo-200/60 dark:border-indigo-500/20 text-xs">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-400">Candidate Telemetry</span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Proctored & Ready</span>
+                </div>
+                <div className="space-y-1 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+                  <div className="flex justify-between">
+                    <span>Daily Missions:</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">{completedMissionsCount}/3 Done</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Placement Index:</span>
+                    <span className="text-indigo-600 dark:text-indigo-400 font-bold">{Math.min(95, 45 + (testHistory.length * 5) + (codingHistory.length * 5))}%</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Sidebar Bottom Footer: Quick Links & Profile */}
             <div className="p-3 border-t border-slate-200/80 dark:border-slate-800/80 space-y-2 mt-auto">
@@ -469,7 +505,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                 </button>
               )}
 
-              {/* User Profile Mini Pill */}
+              {/* User Account Card (Matching Admin Account Card Style) */}
               <div 
                 onClick={() => {
                   setEditName(user?.name || '');
@@ -478,16 +514,16 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   setEditHometown(user?.hometown || '');
                   setIsEditingProfile(true);
                 }}
-                className={`flex items-center gap-3 p-2 rounded-2xl bg-slate-100/90 dark:bg-slate-800/70 hover:bg-indigo-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 cursor-pointer transition ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                className={`flex items-center gap-3 p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-500/50 cursor-pointer transition ${isSidebarCollapsed ? 'justify-center' : ''}`}
                 title="Manage Student Profile"
               >
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-sm">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-black text-sm flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
                   {firstName.charAt(0).toUpperCase()}
                 </div>
                 {!isSidebarCollapsed && (
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.name || 'Student'}</p>
-                    <p className="text-[10px] text-slate-500 truncate">{userEmail}</p>
+                    <p className="text-xs font-black text-slate-900 dark:text-white truncate">{user?.name || 'Student'}</p>
+                    <p className="text-[10px] text-indigo-600 dark:text-indigo-400 truncate font-bold">Verified Candidate</p>
                   </div>
                 )}
               </div>
@@ -496,41 +532,52 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
         )}
 
         {/* Main Content Stage */}
-        <main className={`flex-1 overflow-y-auto relative bg-slate-50 dark:bg-slate-950 ${isGlobalFullscreen || activeTest ? 'p-0 w-full min-h-screen' : 'p-4 sm:p-6 md:p-8'}`}>
+        <main className={`flex-1 overflow-y-auto relative bg-slate-50 dark:bg-slate-950 ${isGlobalFullscreen || activeTest ? 'p-0 w-full min-h-screen' : 'p-5 sm:p-7 md:p-9'}`}>
           
+          {/* Background Ambient Glows (Matching Admin Look) */}
+          <div className="pointer-events-none absolute -top-24 left-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl" />
+          <div className="pointer-events-none absolute top-1/3 right-10 w-96 h-96 bg-purple-500/10 dark:bg-purple-500/15 rounded-full blur-3xl" />
+
           {/* Top Persistent Global Header */}
           {!isGlobalFullscreen && !activeTest && (
-            <header className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md z-30">
+            <header className="flex flex-wrap items-center justify-between gap-3 mb-7 pb-4 border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md z-30">
               
               {/* Left Breadcrumb & Mobile Menu Trigger */}
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setMobileMenuOpen(true)}
-                  className="md:hidden w-9 h-9 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold text-sm shadow-xs"
+                  className="md:hidden w-10 h-10 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold text-base shadow-xs"
                 >
                   ☰
                 </button>
 
-                <div className="flex items-center gap-2 text-xs font-bold bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 px-3.5 py-1.5 rounded-2xl shadow-xs">
+                <div className="flex items-center gap-2 text-xs font-bold bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 px-3.5 py-2 rounded-2xl shadow-xs">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   <span className="text-slate-600 dark:text-slate-400 font-bold">CampusEdge</span>
                   <span className="text-slate-400 dark:text-slate-500">/</span>
                   <span className="text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-wider text-[11px]">
-                    {navSections.flatMap(s => s.items).find(n => n.id === activeTab)?.label || 'Mission Hub'}
+                    {navSections.flatMap(s => s.items).find(n => n.id === activeTab)?.label || 'Candidate Suite'}
                   </span>
                 </div>
               </div>
 
               {/* Right Global Widgets & Controls */}
-              <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
                 
+                {/* Live Server Status Pill (Matching Admin) */}
+                <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-bold text-slate-700 dark:text-slate-300">Live Server</span>
+                  <span className="font-mono text-slate-400 text-[10px]">:5000</span>
+                </div>
+
                 {/* Search / Command Palette Trigger (Ctrl+K) */}
                 <button
                   onClick={() => {
                     const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
                     window.dispatchEvent(event);
                   }}
-                  className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-medium shadow-xs cursor-pointer transition"
+                  className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-medium shadow-xs cursor-pointer transition"
                   title="Search commands, subjects and modules (Ctrl+K)"
                 >
                   <span>🔍</span>
@@ -851,23 +898,23 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                 </div>
               )}
 
-              {/* Friendly Welcome & Interactive Readiness Header */}
-              <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+              {/* Executive Welcome & Status Header */}
+              <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div className="space-y-2 z-10 max-w-xl">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-500/30">
-                      ⚡ CampusEdge Placement 2026
+                      ⚡ Campus Placement Grid 2026
                     </span>
                     <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                      {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+                      • {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
                     </span>
                   </div>
 
                   <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                    Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">{firstName}</span>! 👋
+                    Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400">{firstName}</span>! 👋
                   </h1>
                   <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                    Complete your daily practice missions, run real code tests, and boost your university placement index.
+                    Run live multi-language code tests, simulate real AI recruiter interviews, audit ATS resume scores, and track campus recruitment drives.
                   </p>
                 </div>
 
@@ -886,12 +933,12 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                         style={{ width: `${Math.min(95, 45 + (testHistory.length * 5) + (codingHistory.length * 5))}%` }}
                       />
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1">Based on test history & audits</p>
+                    <p className="text-[10px] text-slate-400 mt-1">Based on test audits & live compilers</p>
                   </div>
 
                   <button
                     onClick={() => { playSound('click'); setShowCertModal(true); }}
-                    className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md transition cursor-pointer shrink-0"
+                    className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer shrink-0"
                   >
                     🏆 Certificate
                   </button>
@@ -899,7 +946,114 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
               </div>
 
               {/* ========================================================
-                  UNIFIED PLACEMENT WORKSPACE (ALL MODULES - CLEAN & SIMPLE)
+                  EXECUTIVE CANDIDATE KPI RIBBON (MATCHING ADMIN UI/UX STYLE)
+                  ======================================================== */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                
+                {/* Card 1: Placement Readiness Index */}
+                <div 
+                  onClick={() => { playSound('click'); setShowCertModal(true); }}
+                  className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 p-5 sm:p-6 rounded-3xl relative overflow-hidden group hover:border-emerald-500/60 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 cursor-pointer"
+                >
+                  <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                  <div className="flex justify-between items-start">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
+                      🏆
+                    </div>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-mono">
+                      Verified Status
+                    </span>
+                  </div>
+                  <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-4 tracking-tight">
+                    {Math.min(95, 45 + (testHistory.length * 5) + (codingHistory.length * 5))}%
+                  </p>
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Readiness Score</span>
+                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                      <span>⚡ Claim Certificate ➔</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card 2: Proctored Assessments */}
+                <div 
+                  onClick={() => { setActiveTab('mockTests'); playSound('click'); }}
+                  className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 p-5 sm:p-6 rounded-3xl relative overflow-hidden group hover:border-indigo-500/60 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 cursor-pointer"
+                >
+                  <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                  <div className="flex justify-between items-start">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
+                      📝
+                    </div>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 font-mono">
+                      Proctored Arena
+                    </span>
+                  </div>
+                  <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-4 tracking-tight">
+                    {testHistory.length}
+                  </p>
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Mock Tests Taken</span>
+                    <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1">
+                      <span>🛡️ Anti-Cheat Active</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card 3: Coding Sandbox Challenges */}
+                <div 
+                  onClick={() => { setActiveTab('codingArena'); playSound('click'); }}
+                  className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 p-5 sm:p-6 rounded-3xl relative overflow-hidden group hover:border-cyan-500/60 hover:shadow-xl hover:shadow-cyan-500/10 transition-all duration-300 cursor-pointer"
+                >
+                  <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                  <div className="flex justify-between items-start">
+                    <div className="w-12 h-12 rounded-2xl bg-cyan-50 dark:bg-cyan-950/80 border border-cyan-200 dark:border-cyan-500/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
+                      💻
+                    </div>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-cyan-50 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/30 font-mono">
+                      Multi-Lang
+                    </span>
+                  </div>
+                  <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-4 tracking-tight">
+                    {codingHistory.length}
+                  </p>
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Problems Solved</span>
+                    <span className="text-[11px] text-cyan-600 dark:text-cyan-400 font-bold flex items-center gap-1">
+                      <span>⚡ Py, JS, Java, C++</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card 4: ATS Resume & Voice HR */}
+                <div 
+                  onClick={() => { setActiveTab(latestAtsScore ? 'resumeChecker' : 'aiInterview'); playSound('click'); }}
+                  className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 p-5 sm:p-6 rounded-3xl relative overflow-hidden group hover:border-purple-500/60 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 cursor-pointer"
+                >
+                  <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                  <div className="flex justify-between items-start">
+                    <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
+                      🎙️
+                    </div>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30 font-mono">
+                      Gemini AI
+                    </span>
+                  </div>
+                  <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-4 tracking-tight">
+                    {latestAtsScore ? `${latestAtsScore.score}/100` : `${interviewHistory.length} Logs`}
+                  </p>
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{latestAtsScore ? 'ATS Match Score' : 'AI Speech Sessions'}</span>
+                    <span className="text-[11px] text-purple-600 dark:text-purple-400 font-bold flex items-center gap-1">
+                      <span>🤖 Recruiter Ready</span>
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* ========================================================
+                  UNIFIED PLACEMENT WORKSPACE (EXECUTIVE 8-MODULE LAUNCHER)
                   ======================================================== */}
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -916,33 +1070,34 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   </div>
                 </div>
 
-                {/* Unified High-Clarity Grid with Integrated Mission Badges */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                {/* Unified High-Clarity Grid with Executive Card Styling */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   
                   {/* 1. Coding Arena */}
                   <div 
                     onClick={() => { setActiveTab('codingArena'); playSound('click'); }}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-cyan-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                    className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 hover:border-cyan-500/60 hover:shadow-xl hover:shadow-cyan-500/10 transition-all duration-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden"
                   >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none" />
                     <div>
-                      <div className="flex justify-between items-start mb-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-cyan-50 dark:bg-cyan-950/80 border border-cyan-200 dark:border-cyan-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="w-12 h-12 rounded-2xl bg-cyan-50 dark:bg-cyan-950/80 border border-cyan-200 dark:border-cyan-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-inner">
                           💻
                         </div>
-                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                        <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full font-mono ${
                           isCodingDone 
-                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' 
-                            : 'bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300'
+                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30' 
+                            : 'bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/30'
                         }`}>
                           {isCodingDone ? '✓ Done' : '+150 XP'}
                         </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-cyan-600 transition">Coding Arena</h3>
+                      <h3 className="font-black text-slate-900 dark:text-white text-xs group-hover:text-cyan-600 transition">Coding Arena</h3>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                         Multi-language browser compiler (Python, JS, Java, C++) with test cases.
                       </p>
                     </div>
-                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-cyan-600 dark:text-cyan-400">
+                    <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs font-bold text-cyan-600 dark:text-cyan-400">
                       <span>Launch Compiler</span>
                       <span>➔</span>
                     </div>
@@ -951,27 +1106,28 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   {/* 2. Mock Test Arena */}
                   <div 
                     onClick={() => { setActiveTab('mockTests'); playSound('click'); }}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                    className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 hover:border-indigo-500/60 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden"
                   >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-bl-full pointer-events-none" />
                     <div>
-                      <div className="flex justify-between items-start mb-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-inner">
                           📝
                         </div>
-                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                        <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full font-mono ${
                           isMockDone 
-                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' 
-                            : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300'
+                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30' 
+                            : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-500/30'
                         }`}>
                           {isMockDone ? `✓ ${testHistory.length} Taken` : '+100 XP'}
                         </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-indigo-600 transition">Mock Test Arena</h3>
+                      <h3 className="font-black text-slate-900 dark:text-white text-xs group-hover:text-indigo-600 transition">Mock Test Arena</h3>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                         Timed screening assessments with auto-submit countdown & ranking.
                       </p>
                     </div>
-                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                    <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs font-bold text-indigo-600 dark:text-indigo-400">
                       <span>Start Test</span>
                       <span>➔</span>
                     </div>
@@ -980,23 +1136,24 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   {/* 3. Self-Paced Practice */}
                   <div 
                     onClick={() => { setActiveTab('practice'); playSound('click'); }}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-amber-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                    className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 hover:border-amber-500/60 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden"
                   >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-500/10 to-transparent rounded-bl-full pointer-events-none" />
                     <div>
-                      <div className="flex justify-between items-start mb-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-inner">
                           ⚡
                         </div>
-                        <span className="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950 border border-amber-300 dark:border-amber-500/30 px-2.5 py-1 rounded-full font-mono">
                           Self-Paced
                         </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-amber-600 transition">Practice Mode</h3>
+                      <h3 className="font-black text-slate-900 dark:text-white text-xs group-hover:text-amber-600 transition">Practice Mode</h3>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                         Topic-by-topic questions with instant explanations and bookmarking.
                       </p>
                     </div>
-                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-amber-600 dark:text-amber-400">
+                    <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs font-bold text-amber-600 dark:text-amber-400">
                       <span>Browse Questions</span>
                       <span>➔</span>
                     </div>
@@ -1005,23 +1162,24 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   {/* 4. AI Voice HR Simulator */}
                   <div 
                     onClick={() => { setActiveTab('aiInterview'); playSound('click'); }}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                    className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 hover:border-purple-500/60 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden"
                   >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full pointer-events-none" />
                     <div>
-                      <div className="flex justify-between items-start mb-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-inner">
                           🎙️
                         </div>
-                        <span className="text-[10px] font-black uppercase text-purple-800 dark:text-purple-300 bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-black uppercase text-purple-800 dark:text-purple-300 bg-purple-100 dark:bg-purple-950 border border-purple-300 dark:border-purple-500/30 px-2.5 py-1 rounded-full font-mono">
                           Gemini Voice
                         </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-purple-600 transition">AI HR Simulator</h3>
+                      <h3 className="font-black text-slate-900 dark:text-white text-xs group-hover:text-purple-600 transition">AI HR Simulator</h3>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                         Spoken technical & HR behavioral interview practice with instant AI feedback.
                       </p>
                     </div>
-                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-purple-600 dark:text-purple-400">
+                    <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs font-bold text-purple-600 dark:text-purple-400">
                       <span>Simulate Speech</span>
                       <span>➔</span>
                     </div>
@@ -1030,27 +1188,28 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   {/* 5. ATS Resume Scanner */}
                   <div 
                     onClick={() => { setActiveTab('resumeChecker'); playSound('click'); }}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-rose-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                    className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 hover:border-rose-500/60 hover:shadow-xl hover:shadow-rose-500/10 transition-all duration-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden"
                   >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-rose-500/10 to-transparent rounded-bl-full pointer-events-none" />
                     <div>
-                      <div className="flex justify-between items-start mb-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-inner">
                           📄
                         </div>
-                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                        <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full font-mono ${
                           isResumeDone 
-                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' 
-                            : 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
+                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30' 
+                            : 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30'
                         }`}>
                           {isResumeDone ? `${latestAtsScore.score}/100` : '+50 XP'}
                         </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-rose-600 transition">ATS Resume Scanner</h3>
+                      <h3 className="font-black text-slate-900 dark:text-white text-xs group-hover:text-rose-600 transition">ATS Resume Scanner</h3>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                         Upload PDF resume to get keyword score and Fortune 500 job matching.
                       </p>
                     </div>
-                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-rose-600 dark:text-rose-400">
+                    <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs font-bold text-rose-600 dark:text-rose-400">
                       <span>Audit Resume</span>
                       <span>➔</span>
                     </div>
@@ -1059,23 +1218,24 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   {/* 6. Campus Drives & Alerts */}
                   <div 
                     onClick={() => { setActiveTab('drives'); playSound('click'); }}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                    className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 hover:border-emerald-500/60 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden"
                   >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-bl-full pointer-events-none" />
                     <div>
-                      <div className="flex justify-between items-start mb-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-inner">
                           📢
                         </div>
-                        <span className="text-[10px] font-black uppercase text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-black uppercase text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-500/30 px-2.5 py-1 rounded-full font-mono">
                           Live Drives
                         </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-emerald-600 transition">Campus Drives & Jobs</h3>
+                      <h3 className="font-black text-slate-900 dark:text-white text-xs group-hover:text-emerald-600 transition">Campus Drives & Jobs</h3>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                         Track upcoming company recruitment circulars, deadlines, and registration.
                       </p>
                     </div>
-                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs font-bold text-emerald-600 dark:text-emerald-400">
                       <span>View Drives</span>
                       <span>➔</span>
                     </div>
@@ -1084,23 +1244,24 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   {/* 7. Company Eligibility */}
                   <div 
                     onClick={() => { setActiveTab('eligibility'); playSound('click'); }}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                    className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 hover:border-teal-500/60 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden"
                   >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-teal-500/10 to-transparent rounded-bl-full pointer-events-none" />
                     <div>
-                      <div className="flex justify-between items-start mb-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-teal-50 dark:bg-teal-950/80 border border-teal-200 dark:border-teal-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/80 border border-teal-200 dark:border-teal-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-inner">
                           🏢
                         </div>
-                        <span className="text-[10px] font-black uppercase text-teal-800 dark:text-teal-300 bg-teal-100 dark:bg-teal-950 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-black uppercase text-teal-800 dark:text-teal-300 bg-teal-100 dark:bg-teal-950 border border-teal-300 dark:border-teal-500/30 px-2.5 py-1 rounded-full font-mono">
                           MNC Cutoffs
                         </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-teal-600 transition">Company Eligibility</h3>
+                      <h3 className="font-black text-slate-900 dark:text-white text-xs group-hover:text-teal-600 transition">Company Eligibility</h3>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                         Check CGPA requirements, backlog limits, and eligible branches.
                       </p>
                     </div>
-                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-teal-600 dark:text-teal-400">
+                    <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs font-bold text-teal-600 dark:text-teal-400">
                       <span>Check Cutoffs</span>
                       <span>➔</span>
                     </div>
@@ -1109,23 +1270,24 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   {/* 8. 1v1 Battle */}
                   <div 
                     onClick={() => { setActiveTab('1v1Battle'); playSound('click'); }}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-pink-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                    className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 hover:border-pink-500/60 hover:shadow-xl hover:shadow-pink-500/10 transition-all duration-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden"
                   >
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-pink-500/10 to-transparent rounded-bl-full pointer-events-none" />
                     <div>
-                      <div className="flex justify-between items-start mb-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-pink-50 dark:bg-pink-950/80 border border-pink-200 dark:border-pink-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="w-12 h-12 rounded-2xl bg-pink-50 dark:bg-pink-950/80 border border-pink-200 dark:border-pink-500/30 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-inner">
                           ⚔️
                         </div>
-                        <span className="text-[10px] font-black uppercase text-pink-800 dark:text-pink-300 bg-pink-100 dark:bg-pink-950 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-black uppercase text-pink-800 dark:text-pink-300 bg-pink-100 dark:bg-pink-950 border border-pink-300 dark:border-pink-500/30 px-2.5 py-1 rounded-full font-mono">
                           1v1 Duel
                         </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-pink-600 transition">1v1 Coding Battle</h3>
+                      <h3 className="font-black text-slate-900 dark:text-white text-xs group-hover:text-pink-600 transition">1v1 Coding Battle</h3>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                         Challenge friends or classmates in real-time speed coding duels.
                       </p>
                     </div>
-                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-pink-600 dark:text-pink-400">
+                    <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs font-bold text-pink-600 dark:text-pink-400">
                       <span>Enter Arena</span>
                       <span>➔</span>
                     </div>
@@ -1134,26 +1296,26 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                 </div>
 
                 {/* Secondary Quick Access Bar for Analytics, Leaderboard & Roadmap */}
-                <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-white dark:bg-slate-900/90 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
+                <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-slate-800/80 text-xs font-bold shadow-md">
                   <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5 pl-1">
                     <span>🧭</span> Career Growth Navigation:
                   </span>
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => { setActiveTab('progress'); playSound('click'); }}
-                      className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 transition cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 transition cursor-pointer border border-slate-200/50 dark:border-slate-700/50"
                     >
                       📈 Score Analytics
                     </button>
                     <button 
                       onClick={() => { setActiveTab('leaderboard'); playSound('click'); }}
-                      className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-amber-600 transition cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-amber-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-amber-600 transition cursor-pointer border border-slate-200/50 dark:border-slate-700/50"
                     >
                       🏆 Campus Leaderboard
                     </button>
                     <button 
                       onClick={() => { setActiveTab('roadmap'); playSound('click'); }}
-                      className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-purple-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-purple-600 transition cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-purple-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-purple-600 transition cursor-pointer border border-slate-200/50 dark:border-slate-700/50"
                     >
                       🗺️ AI Study Roadmap
                     </button>
@@ -1164,8 +1326,9 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
               {/* ========================================================
                   INTERACTIVE TOPIC EXPLORER (SEARCH & FILTER 17 SUBJECTS)
                   ======================================================== */}
-              <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-xl space-y-5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 relative z-10">
                   <div>
                     <h2 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                       <span>📚</span> Topic & Subject Explorer
@@ -1180,7 +1343,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                       placeholder="Search subject or keyword..."
                       value={topicSearch}
                       onChange={(e) => setTopicSearch(e.target.value)}
-                      className="w-full px-3.5 py-2 pl-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                      className="w-full px-3.5 py-2 pl-9 bg-white/90 dark:bg-slate-950/90 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-indigo-500 shadow-inner"
                     />
                     <span className="absolute left-3 top-2.5 text-xs text-slate-400">🔍</span>
                     {topicSearch && (
@@ -1190,7 +1353,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                 </div>
 
                 {/* Filter Pills */}
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 relative z-10">
                   {[
                     { id: 'all', label: 'All Subjects (17)' },
                     { id: 'core', label: '💻 Core Computer Science' },
@@ -1203,8 +1366,8 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                       onClick={() => setTopicFilter(f.id)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                         topicFilter === f.id
-                          ? 'bg-indigo-600 text-white shadow-xs'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                          : 'bg-slate-100/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700/50'
                       }`}
                     >
                       {f.label}
@@ -1213,7 +1376,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                 </div>
 
                 {/* Filtered Grid of Topics */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1 relative z-10">
                   {filteredTopics.length === 0 ? (
                     <div className="col-span-full py-8 text-center text-xs text-slate-500">
                       No subjects found matching "{topicSearch}". Try another search term.
@@ -1224,12 +1387,12 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                       return (
                         <div 
                           key={subject}
-                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/90 hover:border-indigo-500/50 transition group flex flex-col justify-between"
+                          className="p-4 rounded-2xl bg-white/70 dark:bg-slate-950/70 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 transition group flex flex-col justify-between"
                         >
                           <div>
                             <div className="flex items-center justify-between gap-2 mb-2">
                               <span className="text-xl group-hover:scale-110 transition-transform">{meta.icon}</span>
-                              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-white/90 dark:bg-slate-800/90 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 font-mono">
                                 {meta.count}+ Qs
                               </span>
                             </div>
@@ -1256,7 +1419,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                                 setActiveTab('mockTests');
                                 playSound('click');
                               }}
-                              className="flex-1 py-1.5 px-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] shadow-xs transition cursor-pointer text-center"
+                              className="flex-1 py-1.5 px-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] shadow-sm transition cursor-pointer text-center"
                             >
                               📝 Mock Test
                             </button>
@@ -1274,8 +1437,9 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
                 {/* Performance Trend SVG Curve (7 Cols) */}
-                <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm space-y-4">
-                  <div className="flex justify-between items-center">
+                <div className="lg:col-span-7 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 p-6 rounded-3xl shadow-xl space-y-4 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                  <div className="flex justify-between items-center relative z-10">
                     <div>
                       <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">
                         Performance Curve 📈
@@ -1291,11 +1455,11 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   </div>
 
                   {testHistory.length === 0 ? (
-                    <div className="py-12 text-center text-xs text-slate-500 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                    <div className="py-12 text-center text-xs text-slate-500 bg-slate-50/50 dark:bg-slate-950/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 relative z-10">
                       No test history recorded yet. Complete a test in the Mock Arena to render your curve!
                     </div>
                   ) : (
-                    <div className="pt-2">
+                    <div className="pt-2 relative z-10">
                       <div className="relative w-full overflow-x-auto">
                         <svg viewBox="0 0 600 180" className="w-full h-44 overflow-visible">
                           <line x1="30" y1="20" x2="580" y2="20" stroke="#cbd5e1" strokeDasharray="3 3" strokeWidth="1" />
@@ -1368,8 +1532,9 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                 </div>
 
                 {/* Recent Tests Records (5 Cols) */}
-                <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm space-y-4">
-                  <div className="flex justify-between items-center">
+                <div className="lg:col-span-5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 p-6 rounded-3xl shadow-xl space-y-4 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                  <div className="flex justify-between items-center relative z-10">
                     <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">
                       Recent Activity 📝
                     </h3>
@@ -1382,19 +1547,19 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   </div>
 
                   {testHistory.length === 0 ? (
-                    <p className="text-slate-500 text-xs py-8 text-center">No assessments completed yet.</p>
+                    <p className="text-slate-500 text-xs py-8 text-center relative z-10">No assessments completed yet.</p>
                   ) : (
-                    <div className="space-y-2.5">
+                    <div className="space-y-2.5 relative z-10">
                       {testHistory.slice(0, 4).map((test) => (
-                        <div key={test.id} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex justify-between items-center">
+                        <div key={test.id} className="p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/60 dark:bg-slate-950/60 backdrop-blur-xs flex justify-between items-center hover:border-indigo-500/40 transition">
                           <div className="min-w-0 pr-2">
                             <span className="font-bold text-slate-900 dark:text-white text-xs block truncate">{test.category}</span>
                             <p className="text-[10px] text-slate-500 mt-0.5">{test.test_date} • {test.score}/{test.total}</p>
                           </div>
-                          <span className={`text-xs font-black px-2 py-0.5 rounded-lg shrink-0 ${
+                          <span className={`text-xs font-black px-2.5 py-1 rounded-xl shrink-0 font-mono ${
                             test.percentage >= 70 
-                              ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' 
-                              : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
+                              ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30' 
+                              : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30'
                           }`}>
                             {test.percentage}%
                           </span>

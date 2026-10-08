@@ -198,6 +198,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
   const [editHometown, setEditHometown] = useState(adminUser?.hometown || '');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [lastSyncedTime, setLastSyncedTime] = useState(new Date());
+  const [isLiveSyncing, setIsLiveSyncing] = useState(false);
 
   useEffect(() => {
     fetchQuestions();
@@ -206,6 +208,14 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
     fetchAdminLeaderboard();
     fetchAdminInterviews();
     fetchAdminCodingHistory();
+
+    // Real-Time 10s auto-sync polling for student enrollments & telemetry
+    const liveSyncTimer = setInterval(() => {
+      fetchStudentsList(true);
+      fetchAllStudentActivity(true);
+    }, 10000);
+
+    return () => clearInterval(liveSyncTimer);
   }, []);
 
   const fetchQuestions = async () => {
@@ -222,27 +232,38 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
     }
   };
 
-  const fetchAllStudentActivity = async () => {
-    setLoadingRecords(true);
+  const fetchAllStudentActivity = async (silent = false) => {
+    if (!silent) setLoadingRecords(true);
     try {
       const response = await apiFetch('/api/questions/admin/all-history');
       if (response.ok) {
         setAllTestRecords(await response.json());
-        setRecordPage(1);
+        if (!silent) setRecordPage(1);
       }
     } catch (err) {
       console.error("Failed to load admin records:", err);
     }
-    setLoadingRecords(false);
+    if (!silent) setLoadingRecords(false);
   };
 
-  const fetchStudentsList = async () => {
-    setLoadingStudents(true);
+  const fetchStudentsList = async (silent = false) => {
+    if (!silent) setLoadingStudents(true);
     try {
       const response = await apiFetch('/api/users/admin/students');
       if (response.ok) {
         const students = await response.json();
-        const studentsWithAts = await Promise.all(students.map(async (student) => {
+        setLastSyncedTime(new Date());
+
+        // Update list immediately so real-time count updates without waiting for ATS scans
+        setStudentsList(prev => {
+          return students.map(s => {
+            const existing = prev.find(p => p.email === s.email);
+            return existing?.latestAts ? { ...s, latestAts: existing.latestAts } : s;
+          });
+        });
+
+        // Background ATS enrichment
+        Promise.all(students.map(async (student) => {
           try {
             const atsRes = await apiFetch(`/api/resume/history/${student.email}`);
             if (atsRes.ok) {
@@ -252,16 +273,17 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
               }
             }
           } catch (e) {
-            console.error("Error fetching ATS for student", student.email);
+            // ignore
           }
           return { ...student, latestAts: null };
-        }));
-        setStudentsList(studentsWithAts);
+        })).then(enriched => {
+          setStudentsList(enriched);
+        }).catch(() => {});
       }
     } catch (err) {
       console.error("Failed to load students list:", err);
     }
-    setLoadingStudents(false);
+    if (!silent) setLoadingStudents(false);
   };
 
   const fetchAdminLeaderboard = async () => {
@@ -899,7 +921,43 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
+          <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end flex-wrap sm:flex-nowrap">
+            {/* Real-Time Live Enrolled Students Counter Pill */}
+            <div 
+              onClick={() => setActiveAdminTab('students')}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-500/40 text-xs shadow-xs hover:border-emerald-500 transition cursor-pointer group"
+              title="Click to view full enrolled students roster (updates every 10s)"
+            >
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="font-black text-slate-900 dark:text-white text-sm">
+                {studentsList.length}
+              </span>
+              <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                Enrolled Students
+              </span>
+              <span className="text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/30">
+                LIVE
+              </span>
+            </div>
+
+            {/* Quick Live Refresh Button */}
+            <button
+              onClick={() => {
+                setIsLiveSyncing(true);
+                fetchStudentsList(true).finally(() => {
+                  setTimeout(() => setIsLiveSyncing(false), 500);
+                  showSuccess(`Real-Time Sync: ${studentsList.length} enrolled students active`);
+                });
+              }}
+              className="p-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-500/40 transition cursor-pointer shadow-xs"
+              title="Instant real-time sync with database"
+            >
+              <span className={`inline-block text-xs ${isLiveSyncing ? 'animate-spin' : ''}`}>🔄</span>
+            </button>
+
             <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-bold text-slate-700 dark:text-slate-300">Live Server</span>
@@ -1757,21 +1815,25 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
               </div>
 
               {/* Card 2: Registered Students */}
-              <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 p-5 sm:p-6 rounded-3xl relative overflow-hidden group hover:border-purple-500/60 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300">
+              <div 
+                onClick={() => setActiveAdminTab('students')}
+                className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 p-5 sm:p-6 rounded-3xl relative overflow-hidden group hover:border-purple-500/60 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 cursor-pointer"
+              >
                 <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full pointer-events-none" />
                 <div className="flex justify-between items-start">
-                  <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl shadow-inner">
+                  <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
                     👥
                   </div>
-                  <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30 font-mono">
-                    Active Roster
+                  <span className="flex items-center gap-1.5 text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-mono">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                    <span>Real-Time Sync</span>
                   </span>
                 </div>
                 <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-4 tracking-tight">{studentsList.length}</p>
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
-                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Enrolled Candidates</span>
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Enrolled Students</span>
                   <span className="text-[11px] text-purple-600 dark:text-purple-400 font-bold flex items-center gap-1">
-                    <span>🎯 ATS Tracked</span>
+                    <span>🎯 Active Roster</span>
                   </span>
                 </div>
               </div>
