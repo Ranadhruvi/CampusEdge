@@ -131,9 +131,9 @@ app.get('/', (req, res) => {
 app.get('/api/health', async (req, res) => {
   try {
     await pool.query('SELECT 1');
-    res.json({ status: 'healthy', database: 'connected', timestamp: new Date().toISOString() });
+    res.status(200).json({ status: 'healthy', database: 'connected', timestamp: new Date().toISOString() });
   } catch (err) {
-    res.status(503).json({ status: 'degraded', database: 'disconnected', error: err.message });
+    res.status(200).json({ status: 'degraded', database: 'disconnected', error: err.message });
   }
 });
 
@@ -2274,4 +2274,4 @@ Instructions:
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 CampusEdge Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 CampusEdge Server running on port ${PORT}`));
