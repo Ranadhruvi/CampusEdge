@@ -2194,7 +2194,18 @@ app.post('/api/chatbot/message', rateLimiter({ max: 50 }), async (req, res) => {
         ? conversationHistory.slice(-8).map(m => `${m.sender === 'user' ? 'Student' : 'Advisor'}: ${m.text}`).join('\n')
         : '';
 
-      const prompt = `You are the CampusEdge AI University Placement & Career Advisor. You help university engineering/tech students prepare for campus recruitment, technical coding rounds, ATS resume optimization, system design, DSA, HR interviews, and company job drives (Google, Amazon, Microsoft, TCS, Infosys, Goldman Sachs, etc.).
+      const prompt = `You are the CampusEdge AI University Placement & Career Advisor on the CampusEdge landing page. You help new and existing university students understand the platform, prepare for campus recruitment drives, technical coding rounds, ATS resume optimization, system design, DSA, HR interviews, and company recruitment (Google, Microsoft, Amazon, Goldman Sachs, TCS, Infosys, Cognizant, Wipro, Accenture, etc.).
+
+KEY FACTS ABOUT CAMPUSEDGE:
+- 100% Free: No fees or hidden paywalls for students across all engineering branches (CSE, IT, AI/DS, ECE, EEE, Mechanical, Civil, Biotech) and Management (MBA).
+- Core Modules:
+  1. Question Bank & Mock Test Arena: 1,000+ verified technical MCQs across 17 subjects (DSA, OS, DBMS, Networks, System Design, React, Java, Python, C++, Aptitude) with timer and instant answer explanations.
+  2. Online Multi-Language Code Compiler & Arena (Python, C++, Java, JS) with test cases and real-time outputs.
+  3. AI Live Speech Mock Interview Simulator: Voice-powered interactive HR & technical interviews that listen to spoken answers, ask contextual follow-up questions, and score communication & technical clarity.
+  4. Real-time ATS Resume Scanner: Upload PDF resume, get score out of 100, keyword match against Fortune 500 job descriptions, and fix formatting gaps.
+  5. Placement Drives & Circulars: Direct updates on visiting companies, eligibility criteria (CGPA/backlogs), CTC salary packages, and deadlines.
+  6. 1v1 Live Coding Battle & College Leaderboards.
+- How to get started: Click "Get Started Free" or "Register" to create an account in 10 seconds or sign in with Google.
 
 Recent conversation history:
 ${historyContext}
@@ -2203,10 +2214,11 @@ Student's latest message:
 "${userQuery}"
 
 Instructions:
-1. Provide a direct, highly engaging, personalized, concise response (2-4 sentences).
-2. If the student is asking for a question, quiz, or test on a topic, or if asking "quiz me" / "test me", generate a multiple-choice question inside the JSON "quiz" field.
-3. Be conversational, natural, and never give repetitive template answers. Reference real tech concepts, frameworks, algorithms, or placement tips as appropriate.
-4. Return ONLY valid JSON in this exact structure:
+1. Provide a direct, highly engaging, accurate, and welcoming response (2-4 sentences). Answer whatever the student asks factually and precisely.
+2. If they ask about what CampusEdge is, how to start, registration, or cost, explain clearly and encourage them to try the free tools.
+3. If the student asks for a quiz/test/practice question or says "quiz me", provide a multiple-choice question in the "quiz" field.
+4. If appropriate, suggest one relevant action button ("actionType": "register" | "scroll_demo" | "scroll_ats" | "login").
+5. Return ONLY valid JSON in this exact structure:
 {
   "reply": "Your conversational answer here.",
   "quiz": null or {
@@ -2217,7 +2229,7 @@ Instructions:
     "explanation": "Brief explanation of why Option A is correct."
   },
   "suggestedActions": [
-    { "label": "Action Button Text", "actionType": "register" | "scroll_ats" }
+    { "label": "Action Button Text", "actionType": "register" | "scroll_demo" | "scroll_ats" }
   ]
 }`;
 
@@ -2239,30 +2251,46 @@ Instructions:
     }
   }
 
-  // Contextual fallback generator
+  // Comprehensive contextual fallback generator for offline / rate-limited queries
   const q = userQuery.toLowerCase();
-  let fallbackReply = "CampusEdge provides 2,052+ verified technical interview questions across 17 subjects, live AI speech mock interviews, and instant ATS resume scoring!";
+  let fallbackReply = "Welcome to CampusEdge! We provide an all-in-one placement prep hub with 1,000+ verified MCQ questions, live AI voice mock interviews, multi-language code compiler, and instant ATS resume scoring — 100% free for all students.";
   let action = { label: 'Get Started Free ➔', actionType: 'register' };
   let quiz = null;
 
-  if (q.includes('dsa') || q.includes('algorithm') || q.includes('tree') || q.includes('graph')) {
-    fallbackReply = "For DSA, prioritize Binary Search, Trees (In-order traversal & BSTs), Dynamic Programming, and Graph BFS/DFS. Would you like to practice a quick question?";
-    action = { label: 'Practice 2,050+ Questions ➔', actionType: 'register' };
-  } else if (q.includes('amazon') || q.includes('google') || q.includes('microsoft')) {
-    fallbackReply = "Top tier companies like Amazon and Google focus heavily on LeetCode Medium/Hard DSA, System Design fundamentals, and Leadership Principles in behavioral rounds.";
-    action = { label: 'Audit Resume for Big Tech ➔', actionType: 'scroll_ats' };
-  } else if (q.includes('resume') || q.includes('ats')) {
-    fallbackReply = "Our ATS scanner analyzes your PDF resume formatting, extracts technical keywords, and calculates a match percentage against corporate recruitment benchmarks.";
-    action = { label: 'Scan Resume Now ➔', actionType: 'scroll_ats' };
-  } else if (q.includes('quiz') || q.includes('test')) {
-    fallbackReply = "Here is a quick question on Data Structures:";
+  if (q.includes('what is') || q.includes('about') || q.includes('how does it work') || q.includes('new student') || q.includes('start')) {
+    fallbackReply = "CampusEdge is your university placement co-pilot! It helps students prepare for top tier campus drives (Google, Amazon, TCS, Infosys) through verified MCQ mock tests, real-time ATS resume scoring, live browser coding compilers, and voice-interactive AI HR mock interviews.";
+    action = { label: 'Create Free Account ➔', actionType: 'register' };
+  } else if (q.includes('free') || q.includes('cost') || q.includes('price') || q.includes('pay') || q.includes('charge')) {
+    fallbackReply = "Yes, CampusEdge is 100% free for all college and university students! All practice modes, AI interview simulators, ATS resume diagnostics, and placement circulars are completely accessible without any paywalls.";
+    action = { label: 'Register Free in 10s ➔', actionType: 'register' };
+  } else if (q.includes('resume') || q.includes('ats') || q.includes('scanner') || q.includes('cv')) {
+    fallbackReply = "Our ATS Resume Scanner evaluates your PDF resume against real Fortune 500 job descriptions. It scores your resume out of 100, detects industry keywords, and highlights missing technical skills to help you clear recruiter screening filters.";
+    action = { label: 'Try ATS Resume Audit ➔', actionType: 'scroll_ats' };
+  } else if (q.includes('interview') || q.includes('voice') || q.includes('speech') || q.includes('hr') || q.includes('simulator')) {
+    fallbackReply = "The AI Voice Mock Interview simulator conducts real-time spoken technical and HR interview rounds. It listens to your voice answers, asks adaptive follow-up questions, and provides instantaneous communication, clarity, and technical scores.";
+    action = { label: 'Preview Mock Interview ➔', actionType: 'scroll_demo' };
+  } else if (q.includes('code') || q.includes('compiler') || q.includes('python') || q.includes('c++') || q.includes('java')) {
+    fallbackReply = "Our built-in Coding Arena lets you solve algorithmic programming challenges with an integrated multi-language browser compiler (supporting Python, C++, Java, and JavaScript) with automated test cases and execution benchmarks.";
+    action = { label: 'Try Live Code Compiler ➔', actionType: 'scroll_demo' };
+  } else if (q.includes('branch') || q.includes('mechanical') || q.includes('civil') || q.includes('electrical') || q.includes('ece') || q.includes('mba')) {
+    fallbackReply = "CampusEdge is designed for ALL students! While Computer Science and IT students focus on DSA and Web Dev, Core Engineering (ECE, EEE, Mech, Civil) and MBA students can practice Aptitude, Logical Reasoning, Core Subjects, and HR Rounds.";
+    action = { label: 'Explore All Branches ➔', actionType: 'register' };
+  } else if (q.includes('company') || q.includes('companies') || q.includes('google') || q.includes('amazon') || q.includes('microsoft') || q.includes('tcs') || q.includes('infosys')) {
+    fallbackReply = "We provide tailored interview prep for both Product Giants (Amazon, Google, Microsoft, Goldman Sachs) and Mass Recruiters (TCS NQT, Infosys, Wipro, Cognizant, Accenture), covering company-specific aptitude patterns and DSA difficulty levels.";
+    action = { label: 'Start Company Prep ➔', actionType: 'register' };
+  } else if (q.includes('dsa') || q.includes('algorithm') || q.includes('tree') || q.includes('graph') || q.includes('dynamic programming')) {
+    fallbackReply = "For Data Structures & Algorithms, focus on: Array Sliding Window, Binary Search, Trees (BST traversal), Graphs (BFS/DFS), and Dynamic Programming. Would you like to try a practice question?";
+    action = { label: 'Practice 1,000+ Questions ➔', actionType: 'register' };
+  } else if (q.includes('quiz') || q.includes('test') || q.includes('practice question') || q.includes('quiz me')) {
+    fallbackReply = "Here is an interactive interview question for you:";
     quiz = {
-      category: "Data Structures",
-      question: "What is the worst-case time complexity of QuickSort when a poor pivot is chosen?",
-      options: ["O(N)", "O(N log N)", "O(N^2)", "O(1)"],
-      correctIndex: 2,
-      explanation: "When the smallest or largest element is consistently picked as pivot in an already sorted array, QuickSort degrades to O(N^2)."
+      category: "Data Structures & Algorithms",
+      question: "What is the average time complexity of searching an element in a balanced Binary Search Tree (BST)?",
+      options: ["O(1)", "O(log N)", "O(N)", "O(N log N)"],
+      correctIndex: 1,
+      explanation: "A balanced BST halves the search space at each level, achieving O(log N) average search time."
     };
+    action = { label: 'Unlock 1,000+ Questions ➔', actionType: 'register' };
   }
 
   res.status(200).json({ reply: fallbackReply, quiz, action });

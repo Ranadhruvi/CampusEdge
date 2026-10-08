@@ -1,35 +1,41 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { API_BASE, apiFetch } from './api';
 
-
 const sampleQuizQuestions = [
   {
     category: "Data Structures & Algorithms",
     question: "What is the average time complexity of searching an element in a balanced Binary Search Tree (BST)?",
     options: ["O(1)", "O(log N)", "O(N)", "O(N log N)"],
     correctIndex: 1,
-    explanation: "A balanced BST (AVL/Red-Black) halves the search space at each level, achieving O(log N) average and worst-case time."
+    explanation: "A balanced BST (AVL/Red-Black) halves the search space at each level, achieving O(log N) average and worst-case search time."
   },
   {
     category: "Operating Systems",
     question: "Which of the following is NOT one of the four Coffman conditions necessary for a Deadlock to occur?",
     options: ["Mutual Exclusion", "Hold and Wait", "Preemption Allowed", "Circular Wait"],
     correctIndex: 2,
-    explanation: "For a deadlock, 'No Preemption' is required. If preemption is allowed, resources can be reclaimed to break deadlocks."
+    explanation: "For a deadlock to occur, 'No Preemption' is required. If preemption is allowed, resources can be reclaimed dynamically to prevent deadlocks."
   },
   {
-    category: "JavaScript",
-    question: "Which phase of the JavaScript Event Loop processes Promise callbacks (`.then()`, `async/await`)?",
+    category: "JavaScript & Web Dev",
+    question: "Which phase of the JavaScript Event Loop processes Promise callbacks (.then, async/await)?",
     options: ["Macrotask Queue", "Microtask Queue", "Render Queue", "Call Stack directly"],
     correctIndex: 1,
-    explanation: "Promise resolutions and `queueMicrotask` run in the Microtask queue, executing immediately after the current script and before rendering or timers."
+    explanation: "Promise resolutions and queueMicrotask run in the Microtask queue, executing immediately after the current script and before any timer or macrotask."
   },
   {
     category: "Database Management & SQL",
     question: "What does the 'I' stand for in the ACID properties of database transactions?",
     options: ["Integrity", "Isolation", "Indexing", "Idempotence"],
     correctIndex: 1,
-    explanation: "Isolation ensures concurrent transactions execute without interfering with one another, avoiding dirty reads and phantom reads."
+    explanation: "Isolation ensures concurrent database transactions execute without interfering with one another, preventing dirty reads and non-repeatable reads."
+  },
+  {
+    category: "Computer Networks",
+    question: "Which protocol is connectionless and does not guarantee packet delivery or ordering?",
+    options: ["TCP", "UDP", "HTTP", "BGP"],
+    correctIndex: 1,
+    explanation: "UDP (User Datagram Protocol) is lightweight and connectionless, prioritizing speed and low latency over guaranteed reliability."
   }
 ];
 
@@ -38,40 +44,41 @@ const roleBlueprints = {
     title: 'Full Stack Software Engineer',
     package: '10 - 35 LPA',
     difficulty: 'High',
-    keySkills: ['React/Next.js', 'Node.js/FastAPI', 'PostgreSQL', 'System Design', 'DSA'],
-    focusTip: 'Focus on full-duplex WebSockets, SQL optimization, and clean microservices architecture.'
+    keySkills: ['React / Next.js', 'Node.js / Express', 'PostgreSQL / MongoDB', 'System Design', 'DSA'],
+    focusTip: 'Master clean API design, database indexing, state management, and containerized deployments.'
   },
   'backend': {
     title: 'Backend Systems Engineer',
     package: '12 - 40 LPA',
     difficulty: 'Very High',
-    keySkills: ['Java/Go/Python', 'Distributed Caching (Redis)', 'Kafka/RabbitMQ', 'Docker/K8s', 'Database Internals'],
-    focusTip: 'Master concurrency, ACID transaction isolation levels, and high-throughput low-latency APIs.'
+    keySkills: ['Java / Go / Python', 'Distributed Caching (Redis)', 'Kafka / RabbitMQ', 'Docker / K8s', 'Database Internals'],
+    focusTip: 'Master concurrency, ACID transaction isolation, and high-throughput low-latency architectures.'
   },
   'frontend': {
     title: 'Modern Frontend Specialist',
     package: '8 - 28 LPA',
     difficulty: 'Medium - High',
-    keySkills: ['React 18/Fiber', 'TypeScript', 'State Management (Zustand/Redux)', 'Web Vitals (LCP/CLS)', 'TailwindCSS'],
-    focusTip: 'Emphasize component reconciliation, SSR/SSG rendering pipelines, and accessible UX patterns.'
+    keySkills: ['React 19 / TypeScript', 'State Architecture', 'Web Performance & Vitals', 'TailwindCSS', 'Accessibility'],
+    focusTip: 'Emphasize component lifecycle, responsive mobile viewports, and efficient client-side caching.'
   },
   'devops': {
     title: 'Cloud & DevOps Engineer',
     package: '11 - 38 LPA',
     difficulty: 'High',
-    keySkills: ['Docker Multi-Stage', 'Kubernetes (Deployments/PVCs)', 'Terraform IaC', 'CI/CD Pipelines', 'Prometheus'],
-    focusTip: 'Demonstrate automated canary deployments, zero-downtime rolling updates, and container security.'
+    keySkills: ['Docker Multi-Stage', 'Kubernetes (Deployments/Ingress)', 'Terraform / IaC', 'CI/CD Pipelines', 'AWS / GCP'],
+    focusTip: 'Demonstrate automated CI/CD pipelines, zero-downtime rolling updates, and container observability.'
   }
 };
 
 export default function LandingChatbot({ onNavigate }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showTeaser, setShowTeaser] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'bot',
-      text: 'Hi there! 👋 I am your CampusEdge AI Career & Placement Advisor. How can I help you accelerate your interview preparation today?',
-      action: null,
+      text: "👋 Welcome to CampusEdge! I'm your AI Campus Placement Advisor.\n\nWhether you're a new student wondering how to get started, preparing for top recruiters (Google, Amazon, TCS, etc.), or exploring our 100% free practice tests, coding arena, and ATS resume scanner — ask me anything!",
+      action: { label: 'Explore Platform Features ➔', actionType: 'scroll_demo' },
       quiz: null,
       blueprint: null,
       time: 'Just now'
@@ -82,22 +89,34 @@ export default function LandingChatbot({ onNavigate }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Proactive greeting teaser for new visitors
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowTeaser(true);
+    }, 2200);
+    return () => clearTimeout(timer);
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
     if (isOpen) {
+      setShowTeaser(false);
       scrollToBottom();
     }
   }, [messages, isTyping, isOpen]);
 
   const quickPrompts = [
-    { label: '🎯 Quick AI Placement Quiz', query: 'quiz' },
-    { label: '💼 Career Salary Blueprint', query: 'blueprint' },
-    { label: '📄 ATS Resume Scanner', query: 'How does the ATS scanner work?' },
-    { label: '🧠 2,050+ Question Bank', query: 'What subjects are in the Question Bank?' },
-    { label: '🎙️ AI Voice HR Simulator', query: 'How do AI Mock Interviews work?' }
+    { label: '🚀 What is CampusEdge?', query: 'What is CampusEdge and how does it help a new student?' },
+    { label: '💰 Is it 100% Free?', query: 'Is CampusEdge completely free to use?' },
+    { label: '🎯 Practice Placement Quiz', query: 'quiz' },
+    { label: '📄 ATS Resume Scanner', query: 'How does the ATS resume scanner work?' },
+    { label: '🎙️ AI Voice HR Simulator', query: 'How do AI Mock Interviews work?' },
+    { label: '💻 Live Code Compiler', query: 'What languages does the coding arena support?' },
+    { label: '🏢 Top Recruiters (Google/TCS)', query: 'How does CampusEdge help prepare for companies like Google and TCS?' },
+    { label: '💼 Career Salary Blueprint', query: 'blueprint' }
   ];
 
   const handleSpeakMessage = (text) => {
@@ -120,14 +139,15 @@ export default function LandingChatbot({ onNavigate }) {
     window.speechSynthesis.speak(utterance);
   };
 
+  // High-accuracy fallback knowledge generator
   const getBotResponse = (userQuery) => {
     const q = userQuery.toLowerCase();
     
     // Interactive Quiz Trigger
-    if (q === 'quiz' || q.includes('quiz') || q.includes('test me') || q.includes('practice question')) {
+    if (q === 'quiz' || q.includes('quiz') || q.includes('test me') || q.includes('practice question') || q.includes('ask me a question')) {
       const randomQ = sampleQuizQuestions[Math.floor(Math.random() * sampleQuizQuestions.length)];
       return {
-        text: `🎯 Here is an interactive interview question from "${randomQ.category}":`,
+        text: `🎯 Here is an interactive technical interview question from "${randomQ.category}":`,
         quiz: {
           ...randomQ,
           userSelected: null,
@@ -138,45 +158,70 @@ export default function LandingChatbot({ onNavigate }) {
     }
 
     // Interactive Career Blueprint Trigger
-    if (q === 'blueprint' || q.includes('salary') || q.includes('package') || q.includes('role career') || q.includes('blueprint')) {
+    if (q === 'blueprint' || q.includes('salary') || q.includes('package') || q.includes('role career') || q.includes('ctc')) {
       return {
-        text: "💼 Select a target engineering career track to view campus placement packages and key skills required:",
+        text: "💼 Select a target engineering career track to view campus placement packages and essential skills required:",
         blueprint: {
           selectedRole: 'fullstack',
           data: roleBlueprints
         },
-        action: null
+        action: { label: 'Create Free Account to Start ➔', actionType: 'register' }
       };
     }
 
-    if (q.includes('resume') || q.includes('ats') || q.includes('score') || q.includes('scanner')) {
+    if (q.includes('what is') || q.includes('about') || q.includes('how does it work') || q.includes('new student') || q.includes('start') || q.includes('help')) {
       return {
-        text: "Our ATS Resume Scanner parses your PDF resume in real time, computes a match score out of 100, detects required keywords, and flags missing tech competencies for Software Engineering roles.",
-        action: { label: 'Upload & Scan Resume ➔', actionType: 'scroll_ats' }
+        text: "CampusEdge is an all-in-one placement preparation workspace built specifically for university students!\n\nHere is how it accelerates your career:\n• 1,000+ Verified MCQ Mock Tests with countdown timers & explanations\n• AI Speech HR Mock Interview simulator that grades spoken clarity & tech depth\n• Instant ATS Resume Audit scored against Fortune 500 job standards\n• Browser Coding Arena supporting Python, C++, Java, and JavaScript\n• Live Campus Recruitment Circulars with CGPA cutoffs & deadlines.",
+        action: { label: 'Create Free Account in 10s ➔', actionType: 'register' }
       };
-    } else if (q.includes('mock') || q.includes('test') || q.includes('question') || q.includes('bank') || q.includes('subject')) {
+    } else if (q.includes('free') || q.includes('cost') || q.includes('price') || q.includes('pay') || q.includes('charge')) {
       return {
-        text: "CampusEdge features 2,052+ strictly unique questions across 17 technical subjects including DSA, OS, Networks, DBMS, System Design, React, Java, Python, C++, and Aptitude with live countdown timers and explanations.",
-        action: { label: 'Explore 2,050+ Questions ➔', actionType: 'register' }
+        text: "Yes, CampusEdge is 100% free for all students! There are no hidden subscription fees, paywalls, or feature locks. You can practice all mock tests, run code in the compiler, take AI voice interviews, and scan your resume completely free.",
+        action: { label: 'Register Free Now ➔', actionType: 'register' }
+      };
+    } else if (q.includes('resume') || q.includes('ats') || q.includes('score') || q.includes('scanner') || q.includes('cv')) {
+      return {
+        text: "Our ATS Resume Scanner evaluates your PDF resume against real corporate recruitment benchmarks (Google, Microsoft, Amazon).\n\nIt computes an overall match score out of 100, verifies industry technical keywords, and flags missing skills or formatting issues that could cause recruiter rejection.",
+        action: { label: 'Try ATS Resume Audit ➔', actionType: 'scroll_ats' }
       };
     } else if (q.includes('interview') || q.includes('hr') || q.includes('voice') || q.includes('speech') || q.includes('simulator')) {
       return {
-        text: "The AI Live Voice HR Simulator conducts realistic 5-round spoken interviews. It listens to your voice, asks contextual technical follow-ups, and produces instant communication & technical feedback scores!",
-        action: { label: 'Try AI Voice Interview Simulator ➔', actionType: 'register' }
+        text: "The AI Voice Mock Interview Simulator conducts realistic spoken interview rounds! It listens to your voice answers, asks dynamic technical follow-ups, and produces instant reports evaluating your problem-solving depth, communication clarity, and confidence.",
+        action: { label: 'Preview Mock Interview ➔', actionType: 'scroll_demo' }
       };
-    } else if (q.includes('drive') || q.includes('placement') || q.includes('company') || q.includes('eligibility') || q.includes('apply')) {
+    } else if (q.includes('mock') || q.includes('test') || q.includes('question') || q.includes('bank') || q.includes('subject') || q.includes('mcq')) {
       return {
-        text: "Placement Officers post active campus recruitment circulars directly on the platform. Students can check CGPA criteria, download notice PDFs, and submit registration confirmations.",
-        action: { label: 'View Placement Drives ➔', actionType: 'register' }
+        text: "CampusEdge features 1,000+ verified technical placement questions across 17 subjects: DSA, Operating Systems, Computer Networks, DBMS, System Design, React, Java, Python, C++, and Aptitude — each with comprehensive explanations.",
+        action: { label: 'Practice Question Bank ➔', actionType: 'register' }
       };
-    } else if (q.includes('signup') || q.includes('register') || q.includes('login') || q.includes('account') || q.includes('free') || q.includes('price')) {
+    } else if (q.includes('code') || q.includes('compiler') || q.includes('python') || q.includes('c++') || q.includes('java') || q.includes('javascript') || q.includes('arena')) {
       return {
-        text: "CampusEdge is 100% free for all university students! You can create an account in 10 seconds or sign in instantly with Google.",
+        text: "Our Coding Arena provides an interactive in-browser compiler supporting Python 3, C++, Java, and JavaScript. You can write algorithms, run code against custom inputs, test edge cases, and view execution runtimes in real time.",
+        action: { label: 'Test Live Compiler ➔', actionType: 'scroll_demo' }
+      };
+    } else if (q.includes('drive') || q.includes('placement') || q.includes('company') || q.includes('eligibility') || q.includes('apply') || q.includes('circular')) {
+      return {
+        text: "College placement officers publish official recruitment notices directly to the platform. You can check eligible branches, minimum CGPA criteria, backlog limits, CTC salary breakdowns, and submission deadlines.",
+        action: { label: 'View Placement Circulars ➔', actionType: 'register' }
+      };
+    } else if (q.includes('branch') || q.includes('mechanical') || q.includes('civil') || q.includes('electrical') || q.includes('ece') || q.includes('mba') || q.includes('stream')) {
+      return {
+        text: "CampusEdge supports students from ALL disciplines! Whether you are in CSE, IT, AI/DS, Electronics (ECE), Electrical (EEE), Mechanical, Civil, or MBA, you can prepare for General Aptitude, Logical Reasoning, Core Technical subjects, and HR interviews.",
+        action: { label: 'Join Free Today ➔', actionType: 'register' }
+      };
+    } else if (q.includes('google') || q.includes('amazon') || q.includes('microsoft') || q.includes('tcs') || q.includes('infosys') || q.includes('wipro')) {
+      return {
+        text: "For Product companies (Amazon, Google, Microsoft), focus on LeetCode Medium/Hard DSA, System Design, and CS Fundamentals. For Mass Recruiters (TCS NQT, Infosys, Accenture), master Quantitative Aptitude, Logical Reasoning, and Core OOPs concepts.",
+        action: { label: 'Start Focused Preparation ➔', actionType: 'register' }
+      };
+    } else if (q.includes('signup') || q.includes('register') || q.includes('login') || q.includes('account')) {
+      return {
+        text: "Creating an account takes less than 10 seconds! Simply sign up with your university email or use one-click Google Sign-In to immediately unlock your student dashboard.",
         action: { label: 'Create Free Account ➔', actionType: 'register' }
       };
     } else {
       return {
-        text: "CampusEdge provides an end-to-end university placement ecosystem: 2,050+ verified mock test questions, live AI voice interviews, instant ATS resume audits, and direct campus recruitment notices.",
+        text: "CampusEdge provides an end-to-end placement ecosystem for university students: 1,000+ verified MCQ questions, live voice AI interviews, instant ATS resume audits, multi-language code compiler, and direct campus recruitment notices.",
         action: { label: 'Get Started Free ➔', actionType: 'register' }
       };
     }
@@ -279,13 +324,30 @@ export default function LandingChatbot({ onNavigate }) {
     if (!action) return;
     if (action.actionType === 'register') {
       if (onNavigate) onNavigate('register');
+    } else if (action.actionType === 'login') {
+      if (onNavigate) onNavigate('login');
     } else if (action.actionType === 'scroll_ats') {
-      const el = document.getElementById('analyzer');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
+      const demoEl = document.getElementById('demo');
+      if (demoEl) {
+        demoEl.scrollIntoView({ behavior: 'smooth' });
+        // Select the ATS tab inside demo if available
+        const atsTabBtn = demoEl.querySelector('button');
+        if (atsTabBtn) atsTabBtn.click();
         setIsOpen(false);
       } else if (onNavigate) {
         onNavigate('register');
+      }
+    } else if (action.actionType === 'scroll_demo') {
+      const el = document.getElementById('demo');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        setIsOpen(false);
+      }
+    } else if (action.actionType === 'scroll_faq') {
+      const el = document.getElementById('faq');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        setIsOpen(false);
       }
     }
   };
@@ -297,7 +359,7 @@ export default function LandingChatbot({ onNavigate }) {
       {
         id: 1,
         sender: 'bot',
-        text: 'Chat cleared! How can I assist with your placement prep today?',
+        text: 'Chat history cleared! What would you like to explore or practice next?',
         action: null,
         quiz: null,
         blueprint: null,
@@ -307,26 +369,73 @@ export default function LandingChatbot({ onNavigate }) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 font-sans">
+    <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 font-sans">
       
+      {/* Floating Proactive Teaser Card for New Users */}
+      {!isOpen && showTeaser && (
+        <div className="absolute -top-36 right-0 w-72 sm:w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-indigo-500/30 dark:border-indigo-500/40 rounded-2xl p-3.5 shadow-2xl animate-fade-in text-slate-800 dark:text-slate-200 z-50">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs">
+                🤖
+              </span>
+              <span className="text-xs font-black text-slate-900 dark:text-white">New to CampusEdge?</span>
+            </div>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setShowTeaser(false); }} 
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs cursor-pointer p-0.5"
+              aria-label="Dismiss greeting"
+            >
+              ✕
+            </button>
+          </div>
+          <p className="text-[11px] font-medium text-slate-600 dark:text-slate-300 mt-1.5 leading-snug">
+            I'm your AI Campus Placement Advisor! Ask me anything about mock tests, ATS resume audits, or top recruiter rounds.
+          </p>
+          <div className="mt-2.5 flex items-center gap-2">
+            <button 
+              onClick={() => { setIsOpen(true); setShowTeaser(false); }} 
+              className="bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1"
+            >
+              <span>Chat with AI</span> 💬
+            </button>
+            <button 
+              onClick={() => { 
+                setIsOpen(true); 
+                setShowTeaser(false); 
+                handleSend('What is CampusEdge and how do I get started?'); 
+              }} 
+              className="bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-300 hover:text-indigo-600 text-[10px] font-bold px-2.5 py-1.5 rounded-xl transition cursor-pointer"
+            >
+              What is this?
+            </button>
+          </div>
+          {/* Subtle pointer triangle */}
+          <div className="absolute -bottom-2 right-8 w-4 h-4 bg-white dark:bg-slate-900 border-r border-b border-indigo-500/30 transform rotate-45"></div>
+        </div>
+      )}
+
       {/* Floating Animated Trigger Button */}
       {!isOpen && (
         <div className="relative group">
-          {/* Attention Tooltip */}
+          {/* Hover Tooltip */}
           <div className="absolute -top-10 right-0 bg-slate-900 border border-indigo-500/40 text-indigo-300 text-[11px] font-bold py-1 px-3 rounded-xl shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition duration-300 pointer-events-none">
-            💬 Have placement questions? Chat with AI!
+            💬 Have placement questions? Chat with AI Advisor!
           </div>
 
           <button
-            onClick={() => setIsOpen(true)}
+            onClick={() => {
+              setIsOpen(true);
+              setShowTeaser(false);
+            }}
             className="bg-gradient-to-tr from-indigo-600 via-purple-600 to-indigo-500 hover:from-indigo-500 hover:to-purple-500 text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-2xl transition transform hover:scale-105 active:scale-95 flex items-center gap-2.5 font-black text-xs cursor-pointer border border-indigo-400/40 group shadow-indigo-600/30"
             aria-label="Open AI Career Advisor Chat"
           >
             <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-base shadow-inner">
               🤖
             </span>
-            <span className="hidden sm:inline tracking-tight text-sm">
-              Ask AI Career Advisor
+            <span className="hidden sm:inline tracking-tight text-sm font-black">
+              Ask AI Placement Guide
             </span>
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
           </button>
@@ -335,7 +444,7 @@ export default function LandingChatbot({ onNavigate }) {
 
       {/* Modern Interactive Glassmorphic Chat Window */}
       {isOpen && (
-        <div className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border border-slate-200 dark:border-slate-800/90 rounded-3xl shadow-2xl w-[92vw] sm:w-[400px] md:w-[430px] flex flex-col h-[560px] overflow-hidden animate-fade-in text-slate-900 dark:text-white transition-all font-sans">
+        <div className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border border-slate-200 dark:border-slate-800/90 rounded-3xl shadow-2xl w-[94vw] sm:w-[410px] md:w-[440px] flex flex-col h-[580px] max-h-[85vh] overflow-hidden animate-fade-in text-slate-900 dark:text-white transition-all font-sans">
           
           {/* Sleek Gradient Header */}
           <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white px-5 py-3.5 flex justify-between items-center shadow-md">
@@ -349,9 +458,9 @@ export default function LandingChatbot({ onNavigate }) {
               <div>
                 <h3 className="font-black text-sm tracking-tight flex items-center gap-1.5">
                   <span>CampusEdge AI Advisor</span>
-                  <span className="text-[10px] bg-white/20 px-2 py-0.2 rounded-full font-bold">Interactive</span>
+                  <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">Live AI</span>
                 </h3>
-                <p className="text-[10px] text-indigo-100 font-medium">Placement Guidance Engine &bull; Online</p>
+                <p className="text-[10px] text-indigo-100 font-medium">Placement & Career Assistant &bull; 100% Free</p>
               </div>
             </div>
 
@@ -360,6 +469,7 @@ export default function LandingChatbot({ onNavigate }) {
                 onClick={handleClearChat}
                 title="Clear Chat History"
                 className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 flex items-center justify-center text-xs transition cursor-pointer"
+                aria-label="Clear chat"
               >
                 🔄
               </button>
@@ -377,7 +487,7 @@ export default function LandingChatbot({ onNavigate }) {
             </div>
           </div>
 
-          {/* Quick Prompts Bar */}
+          {/* Quick Prompts Bar for New Visitors */}
           <div className="bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
             {quickPrompts.map((p, idx) => (
               <button
@@ -403,7 +513,7 @@ export default function LandingChatbot({ onNavigate }) {
                   </div>
                 )}
 
-                <div className={`max-w-[85%] space-y-2`}>
+                <div className="max-w-[85%] space-y-2">
                   <div
                     className={`p-3.5 rounded-2xl leading-relaxed shadow-sm font-medium ${
                       msg.sender === 'user'
@@ -412,12 +522,12 @@ export default function LandingChatbot({ onNavigate }) {
                     }`}
                   >
                     <div className="flex justify-between items-start gap-2">
-                      <p className="flex-1">{msg.text}</p>
+                      <div className="flex-1 whitespace-pre-line">{msg.text}</div>
                       {msg.sender === 'bot' && (
                         <button
                           onClick={() => handleSpeakMessage(msg.text)}
                           title="Read out loud"
-                          className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 text-xs transition cursor-pointer flex-shrink-0"
+                          className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 text-xs transition cursor-pointer flex-shrink-0 ml-1"
                         >
                           {isSpeaking ? '⏹' : '🔊'}
                         </button>
@@ -538,7 +648,7 @@ export default function LandingChatbot({ onNavigate }) {
           >
             <input
               type="text"
-              placeholder="Ask a question or try 'quiz', 'salary', 'ATS'..."
+              placeholder="Ask a question or try 'What is CampusEdge?', 'quiz'..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="flex-1 px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-xl focus:outline-none focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 font-medium"

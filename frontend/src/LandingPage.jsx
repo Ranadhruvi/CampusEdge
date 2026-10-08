@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CampusEdgeLogo from './CampusEdgeLogo';
 import { ThemeToggle } from './ThemeContext';
 import { API_BASE } from './api';
+import LandingChatbot from './LandingChatbot';
 
 
 export default function LandingPage({ onNavigate }) {
@@ -482,6 +483,9 @@ export default function LandingPage({ onNavigate }) {
           <button onClick={() => onNavigate('login')} className="hover:text-indigo-600 dark:hover:text-white transition cursor-pointer">Login</button>
         </div>
       </footer>
+
+      {/* Floating Interactive AI Placement Advisor Chatbot */}
+      <LandingChatbot onNavigate={onNavigate} />
 
     </div>
   );
