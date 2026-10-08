@@ -97,10 +97,26 @@ export default function LandingPage({ onNavigate }) {
           <a href="#recruiters" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Top Recruiters</a>
           <a href="#stories" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Success Stories</a>
           <a href="#faq" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">FAQs</a>
+          <button 
+            onClick={() => onNavigate('admin')} 
+            className="hover:text-amber-500 dark:hover:text-amber-400 text-amber-600 dark:text-amber-300 transition-colors flex items-center gap-1 cursor-pointer font-bold"
+          >
+            <span>👑</span> Admin Portal
+          </button>
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-3">
           <ThemeToggle />
+          
+          <button 
+            onClick={() => onNavigate('admin')}
+            className="text-amber-700 dark:text-amber-300 font-bold hover:text-amber-900 dark:hover:text-amber-200 transition px-2.5 sm:px-3 py-2 text-xs rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 cursor-pointer flex items-center gap-1"
+            title="Administrator Operations Console"
+          >
+            <span>👑</span>
+            <span className="hidden sm:inline">Admin</span>
+          </button>
+
           <button 
             onClick={() => onNavigate('login')}
             className="text-slate-700 dark:text-slate-300 font-bold hover:text-slate-900 dark:hover:text-white transition px-2.5 sm:px-4 py-2 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer"
@@ -457,9 +473,12 @@ export default function LandingPage({ onNavigate }) {
       <footer className="border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950 py-6 px-6 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center max-w-6xl mx-auto w-full gap-3">
         <CampusEdgeLogo size="sm" />
         <p>© 2026 CampusEdge. Empowering student placements across all engineering & management disciplines.</p>
-        <div className="flex gap-4 text-slate-500 dark:text-slate-400 font-medium">
+        <div className="flex gap-4 text-slate-500 dark:text-slate-400 font-medium items-center">
           <a href="#demo" className="hover:text-indigo-600 dark:hover:text-white transition">Lab Preview</a>
           <a href="#faq" className="hover:text-indigo-600 dark:hover:text-white transition">FAQs</a>
+          <button onClick={() => onNavigate('admin')} className="text-amber-600 dark:text-amber-400 font-bold hover:text-amber-500 transition cursor-pointer flex items-center gap-1">
+            <span>👑</span> Admin Deck
+          </button>
           <button onClick={() => onNavigate('login')} className="hover:text-indigo-600 dark:hover:text-white transition cursor-pointer">Login</button>
         </div>
       </footer>

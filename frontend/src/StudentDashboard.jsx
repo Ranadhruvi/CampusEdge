@@ -603,6 +603,15 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   )}
                 </div>
 
+                <a
+                  href="/admin"
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 font-bold text-xs hover:scale-105 transition cursor-pointer shadow-xs"
+                  title="Open Admin Operations Console"
+                >
+                  <span>👑</span>
+                  <span>Admin Deck</span>
+                </a>
+
                 <ThemeToggle />
 
                 {/* Profile Avatar & Menu */}
@@ -644,6 +653,13 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                       >
                         <span>🏆</span> Placement Certificate
                       </button>
+
+                      <a 
+                        href="/admin"
+                        className="w-full text-left px-4 py-2.5 font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
+                      >
+                        <span>👑</span> Admin Deck
+                      </a>
 
                       <button 
                         onClick={handleLogout}

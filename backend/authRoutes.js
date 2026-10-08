@@ -128,4 +128,58 @@ router.post('/login', rateLimiter({ max: 20, message: 'Too many login attempts. 
   }
 });
 
+// UNLOCK ADMIN ACCESS WITH PASSPHRASE
+router.post('/unlock-admin', async (req, res) => {
+  const { email, adminSecretKey } = req.body;
+  try {
+    if (!email || !adminSecretKey) {
+      return res.status(400).json({ message: 'Email and Admin Secret Passphrase are required.' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const correctAdminCode = process.env.ADMIN_SECRET_KEY || 'CampusEdge2026';
+
+    if (adminSecretKey.trim() !== correctAdminCode.trim()) {
+      return res.status(403).json({ message: 'Invalid Admin Secret Passphrase. Please check your admin key.' });
+    }
+
+    const result = await pool.query(
+      `UPDATE users SET role = 'admin' WHERE LOWER(email) = $1 RETURNING id, name, email, role, address, dob, hometown`,
+      [cleanEmail]
+    );
+
+    let updatedUser;
+    if (result.rows.length === 0) {
+      // Auto-provision admin user if account doesn't exist yet
+      const salt = await bcrypt.genSalt(10);
+      const defaultPassword = req.body.password ? req.body.password : 'Admin@2026';
+      const hashedPassword = await bcrypt.hash(defaultPassword, salt);
+      const insertResult = await pool.query(
+        `INSERT INTO users (name, email, password, role, address) 
+         VALUES ($1, $2, $3, 'admin', 'Campus Administration') 
+         RETURNING id, name, email, role, address, dob, hometown`,
+        [req.body.name || 'Campus Administrator', cleanEmail, hashedPassword]
+      );
+      updatedUser = insertResult.rows[0];
+    } else {
+      updatedUser = result.rows[0];
+    }
+
+    const token = jwt.sign(
+      { id: updatedUser.id, email: updatedUser.email, role: 'admin', name: updatedUser.name },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: '👑 Administrator privileges successfully verified!',
+      token,
+      user: updatedUser
+    });
+  } catch (err) {
+    console.error('Error unlocking admin access:', err.message);
+    res.status(500).json({ message: 'Failed to unlock admin access.' });
+  }
+});
+
 module.exports = router;

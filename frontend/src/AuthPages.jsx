@@ -11,7 +11,7 @@ export default function AuthPages({ initialMode = 'login', onAuthSuccess }) {
   const { showSuccess, showError, showWarning } = useToast();
 
   const [mode, setMode] = useState(initialMode); // 'login' | 'register'
-  const [role, setRole] = useState('student'); // 'student' | 'admin'
+  const [role, setRole] = useState(() => (searchParams.get('role') === 'admin' ? 'admin' : 'student')); // 'student' | 'admin'
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,6 +28,12 @@ export default function AuthPages({ initialMode = 'login', onAuthSuccess }) {
       setMode(initialMode);
     }
   }, [initialMode]);
+
+  useEffect(() => {
+    if (searchParams.get('role') === 'admin') {
+      setRole('admin');
+    }
+  }, [searchParams]);
 
   // Handle Google OAuth query redirect if present
   useEffect(() => {

@@ -7,10 +7,32 @@ import { ThemeToggle } from './ThemeContext';
 import CampusEdgeLogo from './CampusEdgeLogo';
 import UserProgressGraph from './UserProgressGraph';
 
+function safeJsonParse(val, fallback = null) {
+  if (!val) return fallback;
+  if (typeof val !== 'string') return val;
+  try {
+    return JSON.parse(val);
+  } catch (e) {
+    return fallback;
+  }
+}
+
 function formatInterviewDialogues(feedback) {
   if (!feedback) return [];
-  const list = typeof feedback === 'string' ? JSON.parse(feedback || '[]') : feedback;
-  if (!Array.isArray(list) || list.length === 0) return [];
+  let list = feedback;
+  if (typeof feedback === 'string') {
+    try {
+      list = JSON.parse(feedback);
+    } catch (e) {
+      return [{ question: 'Interview Feedback & Summary', answer: feedback }];
+    }
+  }
+  if (!Array.isArray(list) || list.length === 0) {
+    if (typeof list === 'string' && list.trim()) {
+      return [{ question: 'Interview Feedback & Summary', answer: list }];
+    }
+    return [];
+  }
 
   // Check if it's chat message format [{ sender: 'ai', text: '...' }, { sender: 'user', text: '...' }]
   const hasSenderFormat = list.some(item => item && (item.sender || item.role));
@@ -56,7 +78,7 @@ function formatInterviewDialogues(feedback) {
   }));
 }
 
-export default function AdminDashboard({ onLogout }) {
+export default function AdminDashboard({ user: propUser, onLogout, onViewLanding }) {
   const [activeAdminTab, setActiveAdminTab] = useState('questions');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { showSuccess, showError, showWarning, showInfo } = useToast();
@@ -130,9 +152,23 @@ export default function AdminDashboard({ onLogout }) {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   // Admin User Data State
-  const savedUser = localStorage.getItem('user');
-  const [adminUser, setAdminUser] = useState(savedUser ? JSON.parse(savedUser) : {});
-  const adminName = adminUser?.name || 'Admin';
+  const [adminUser, setAdminUser] = useState(() => {
+    if (propUser) return propUser;
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    if (propUser) {
+      setAdminUser(propUser);
+    }
+  }, [propUser]);
+
+  const adminName = adminUser?.name || 'Administrator';
   const adminEmail = adminUser?.email || 'admin@campusedge.com';
 
   // Editable Admin Profile Form State
@@ -720,6 +756,26 @@ export default function AdminDashboard({ onLogout }) {
                 >
                   <span>👤</span> Manage Profile
                 </button>
+
+                <a 
+                  href="/dashboard"
+                  onClick={() => setShowProfileMenu(false)}
+                  className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+                >
+                  <span>🎓</span> Student Workspace
+                </a>
+
+                {onViewLanding && (
+                  <button 
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      onViewLanding();
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>🏠</span> Campus Landing
+                  </button>
+                )}
                 
                 <button 
                   onClick={handleLogout}

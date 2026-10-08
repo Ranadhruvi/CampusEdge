@@ -2,6 +2,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import LandingPage from './LandingPage';
 import AuthPages from './AuthPages';
+import AdminAccessGate from './AdminAccessGate';
 import CommandPalette from './CommandPalette';
 import CampusEdgeLogo from './CampusEdgeLogo';
 import { useToast } from './Toast';
@@ -81,7 +82,7 @@ export default function App() {
                   if (view === 'login') navigate('/login');
                   else if (view === 'register') navigate('/register');
                   else if (view === 'student') navigate(user ? '/dashboard' : '/login');
-                  else if (view === 'admin') navigate(user?.role === 'admin' ? '/admin' : '/login');
+                  else if (view === 'admin') navigate('/admin');
                   else navigate('/');
                 }} 
               />
@@ -92,7 +93,7 @@ export default function App() {
           <Route 
             path="/login" 
             element={
-              user ? (
+              user && !location.search.includes('switch') && !location.search.includes('role=') ? (
                 <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />
               ) : (
                 <AuthPages initialMode="login" onAuthSuccess={handleAuthSuccess} />
@@ -102,7 +103,7 @@ export default function App() {
           <Route 
             path="/register" 
             element={
-              user ? (
+              user && !location.search.includes('switch') && !location.search.includes('role=') ? (
                 <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />
               ) : (
                 <AuthPages initialMode="register" onAuthSuccess={handleAuthSuccess} />
@@ -126,22 +127,25 @@ export default function App() {
             } 
           />
 
-          {/* Protected Admin Dashboard */}
+          {/* Protected Admin Dashboard with Seamless Elevation Gate */}
           <Route 
             path="/admin/*" 
             element={
-              user ? (
-                user.role === 'admin' ? (
-                  <AdminDashboard 
-                    user={user} 
-                    onLogout={handleLogout} 
-                    onViewLanding={() => navigate('/')} 
-                  />
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
+              user && user.role === 'admin' ? (
+                <AdminDashboard 
+                  user={user} 
+                  onLogout={handleLogout} 
+                  onViewLanding={() => navigate('/')} 
+                />
               ) : (
-                <Navigate to="/login" replace state={{ from: location }} />
+                <AdminAccessGate 
+                  currentUser={user} 
+                  onElevateSuccess={(elevatedUser) => {
+                    setUser(elevatedUser);
+                    navigate('/admin', { replace: true });
+                  }} 
+                  onLogout={handleLogout} 
+                />
               )
             } 
           />
