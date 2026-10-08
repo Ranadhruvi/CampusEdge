@@ -9,13 +9,62 @@ const { authenticateToken, requireAdmin } = require('./middleware/authMiddleware
 // ==========================================
 router.get('/admin/students', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT id, name, email, dob, hometown, address, role, created_at FROM users WHERE LOWER(role) = 'student' ORDER BY id DESC`
-    );
+    const query = `
+      WITH candidate_emails AS (
+        SELECT email FROM test_history WHERE email IS NOT NULL AND email != ''
+        UNION
+        SELECT email FROM coding_history WHERE email IS NOT NULL AND email != ''
+        UNION
+        SELECT email FROM interview_history WHERE email IS NOT NULL AND email != ''
+        UNION
+        SELECT user_email as email FROM resume_history WHERE user_email IS NOT NULL AND user_email != ''
+        UNION
+        SELECT email FROM users WHERE LOWER(role) = 'student' OR role IS NULL OR role = ''
+      )
+      SELECT DISTINCT
+        COALESCE(u.id, 9000 + (DENSE_RANK() OVER (ORDER BY c.email))::int) as id,
+        COALESCE(u.name, split_part(c.email, '@', 1)) as name,
+        c.email,
+        u.dob,
+        u.hometown,
+        u.address,
+        COALESCE(u.role, 'student') as role,
+        COALESCE(u.created_at, NOW()) as created_at
+      FROM candidate_emails c
+      LEFT JOIN users u ON LOWER(c.email) = LOWER(u.email)
+      WHERE LOWER(c.email) NOT IN ('admin@campusedge.edu', 'admin@gmail.com')
+      ORDER BY id DESC;
+    `;
+    const result = await pool.query(query);
     res.json(result.rows);
   } catch (err) {
-    console.error("Fetch Students Error:", err.message);
-    res.status(500).json({ message: "Server error fetching student roster." });
+    console.error("Fetch Students Error, trying fallback query:", err.message);
+    try {
+      const fallbackQuery = `
+        SELECT DISTINCT
+          u.id, 
+          COALESCE(u.name, split_part(u.email, '@', 1)) as name, 
+          u.email, 
+          u.dob, 
+          u.hometown, 
+          u.address, 
+          COALESCE(u.role, 'student') as role, 
+          u.created_at 
+        FROM users u
+        LEFT JOIN test_history th ON LOWER(u.email) = LOWER(th.email)
+        WHERE LOWER(u.role) = 'student' 
+           OR u.role IS NULL 
+           OR u.role = '' 
+           OR th.id IS NOT NULL 
+           OR (LOWER(u.email) NOT IN ('admin@campusedge.edu', 'admin@gmail.com') AND LOWER(u.name) != 'master administrator')
+        ORDER BY u.id DESC;
+      `;
+      const fallbackResult = await pool.query(fallbackQuery);
+      res.json(fallbackResult.rows);
+    } catch (fallbackErr) {
+      console.error("Fallback Fetch Students Error:", fallbackErr.message);
+      res.status(500).json({ message: "Server error fetching student roster." });
+    }
   }
 });
 

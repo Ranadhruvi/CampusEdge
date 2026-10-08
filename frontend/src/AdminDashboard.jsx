@@ -237,8 +237,23 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
     try {
       const response = await apiFetch('/api/questions/admin/all-history');
       if (response.ok) {
-        setAllTestRecords(await response.json());
+        const records = await response.json();
+        setAllTestRecords(records);
         if (!silent) setRecordPage(1);
+
+        // Defensive: If studentsList is empty but tests exist, synthesize enrolled candidate records immediately
+        setStudentsList(prev => {
+          if (prev && prev.length > 0) return prev;
+          const candidateEmails = [...new Set(records.map(r => r.user_email || r.email).filter(Boolean))];
+          if (candidateEmails.length === 0) return prev;
+          return candidateEmails.map((email, idx) => ({
+            id: 9000 + idx,
+            name: email.split('@')[0],
+            email,
+            role: 'student',
+            created_at: new Date().toISOString()
+          }));
+        });
       }
     } catch (err) {
       console.error("Failed to load admin records:", err);
@@ -251,8 +266,20 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
     try {
       const response = await apiFetch('/api/users/admin/students');
       if (response.ok) {
-        const students = await response.json();
+        let students = await response.json();
         setLastSyncedTime(new Date());
+
+        // Defensive: if API returned empty array but we have active test records, ensure candidates from tests are included
+        if ((!students || students.length === 0) && allTestRecords && allTestRecords.length > 0) {
+          const uniqueEmails = [...new Set(allTestRecords.map(r => r.user_email || r.email).filter(Boolean))];
+          students = uniqueEmails.map((email, idx) => ({
+            id: 9000 + idx,
+            name: email.split('@')[0],
+            email,
+            role: 'student',
+            created_at: new Date().toISOString()
+          }));
+        }
 
         // Update list immediately so real-time count updates without waiting for ATS scans
         setStudentsList(prev => {

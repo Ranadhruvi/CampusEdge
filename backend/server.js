@@ -1777,7 +1777,7 @@ app.get('/api/leaderboard', optionalAuth, async (req, res) => {
       FROM users u
       LEFT JOIN test_history t ON u.email = t.email
       LEFT JOIN interview_history i ON u.email = i.email
-      WHERE LOWER(u.role) = 'student' OR u.role IS NULL OR u.role = ''
+      WHERE LOWER(u.role) = 'student' OR u.role IS NULL OR u.role = '' OR t.id IS NOT NULL OR i.id IS NOT NULL
       GROUP BY u.id, u.name, u.email
       ORDER BY total_score DESC
       LIMIT 50;
@@ -1812,7 +1812,7 @@ app.get('/api/admin/leaderboard', authenticateToken, requireAdmin, async (req, r
       FROM users u
       LEFT JOIN test_history t ON u.email = t.email
       LEFT JOIN interview_history i ON u.email = i.email
-      WHERE LOWER(u.role) = 'student' OR u.role IS NULL
+      WHERE LOWER(u.role) = 'student' OR u.role IS NULL OR u.role = '' OR t.id IS NOT NULL OR i.id IS NOT NULL
       GROUP BY u.id, u.name, u.email
       ORDER BY total_score DESC;
     `;
@@ -2128,7 +2128,13 @@ app.get('/api/admin/drives/:driveId/applicants', authenticateToken, requireAdmin
       ORDER BY a.id DESC;
     `, [driveId]);
 
-    const totalStudentsRes = await pool.query(`SELECT COUNT(*) FROM users WHERE LOWER(role) = 'student' OR role IS NULL OR role = '';`);
+    const totalStudentsRes = await pool.query(`
+      SELECT COUNT(DISTINCT email) FROM (
+        SELECT email FROM users WHERE LOWER(role) = 'student' OR role IS NULL OR role = ''
+        UNION
+        SELECT email FROM test_history WHERE email IS NOT NULL AND email != ''
+      ) s WHERE LOWER(email) NOT IN ('admin@campusedge.edu', 'admin@gmail.com');
+    `);
     const totalStudents = parseInt(totalStudentsRes.rows[0].count, 10);
 
     res.json({
