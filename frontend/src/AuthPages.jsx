@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import CampusEdgeLogo from './CampusEdgeLogo';
 import { ThemeToggle } from './ThemeContext';
 import { useToast } from './Toast';
-import { API_BASE } from './api';
+import { API_BASE, apiFetch } from './api';
 
 export default function AuthPages({ initialMode = 'login', onAuthSuccess }) {
   const navigate = useNavigate();
@@ -92,15 +92,14 @@ export default function AuthPages({ initialMode = 'login', onAuthSuccess }) {
     }
 
     setSubmitting(true);
-    const endpoint = isRegister ? `${API_BASE}/api/auth/register` : `${API_BASE}/api/auth/login`;
+    const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
     const payload = isRegister 
       ? { name: name.trim(), email: cleanEmail, password, role, adminSecretKey, address: address.trim(), dob, hometown }
       : { email: cleanEmail, password };
 
     try {
-      const response = await fetch(endpoint, {
+      const response = await apiFetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const data = await response.json();

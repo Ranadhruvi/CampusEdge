@@ -23,9 +23,8 @@ export default function AdminAccessGate({ currentUser, onElevateSuccess, onLogou
   useEffect(() => {
     let isMounted = true;
     if (currentUser?.email) {
-      fetch(`${API_BASE}/api/auth/unlock-admin`, {
+      apiFetch('/api/auth/unlock-admin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: currentUser.email.toLowerCase().trim(),
           adminSecretKey: 'CampusEdge2026'
@@ -66,9 +65,8 @@ export default function AdminAccessGate({ currentUser, onElevateSuccess, onLogou
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/auth/unlock-admin`, {
+      const response = await apiFetch('/api/auth/unlock-admin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: targetEmail,
           adminSecretKey: key
@@ -92,7 +90,7 @@ export default function AdminAccessGate({ currentUser, onElevateSuccess, onLogou
       }
     } catch (err) {
       console.error('Error elevating account:', err);
-      showError(`Connection error: Unable to reach backend at ${API_BASE}. Please verify server is running.`);
+      showError(`Connection error: Unable to reach backend. Please verify server is running.`);
     }
     setLoading(false);
   };
@@ -108,9 +106,8 @@ export default function AdminAccessGate({ currentUser, onElevateSuccess, onLogou
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
+      const response = await apiFetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password: adminPassword })
       });
 

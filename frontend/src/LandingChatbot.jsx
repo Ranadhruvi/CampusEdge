@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { API_BASE } from './api';
+import { API_BASE, apiFetch } from './api';
 
 
 const sampleQuizQuestions = [
@@ -202,10 +202,8 @@ export default function LandingChatbot({ onNavigate }) {
     setIsTyping(true);
 
     try {
-      const response = await fetch(`${API_BASE}/api/chatbot/message`, {
+      const response = await apiFetch('/api/chatbot/message', {
         method: 'POST',
-
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage,
           conversationHistory: updatedHistory.slice(-8)
