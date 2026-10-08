@@ -3,6 +3,50 @@
 /* Enable class-based dark mode in Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Universal Typography Locking (Prevents custom phone/device system fonts from overriding the UI) */
+html,
+body,
+button,
+input,
+optgroup,
+select,
+textarea,
+p,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+a,
+label,
+table,
+td,
+th {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Strict Monospace Locking for code editor, syntax highlighting, and execution logs */
+code,
+kbd,
+samp,
+pre,
+.font-mono,
+textarea.font-mono,
+pre code {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-feature-settings: "liga" 1, "calt" 1;
+}
+
 /* =========================================================
    GLOBAL BASE & ANIMATIONS
    ========================================================= */
