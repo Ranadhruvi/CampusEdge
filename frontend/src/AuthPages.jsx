@@ -373,6 +373,31 @@ export default function AuthPages({ initialMode = 'login', onAuthSuccess }) {
             </div>
           </div>
 
+          {/* Admin Secret Passphrase (Only shown when registering as Admin) */}
+          {isRegisterMode && role === 'admin' && (
+            <div className="animate-fade-in p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-500/40 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-amber-800 dark:text-amber-300 uppercase">
+                  👑 Admin Secret Passphrase <span className="text-rose-500">*</span>
+                </label>
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold bg-amber-100 dark:bg-amber-900/60 px-2 py-0.5 rounded">
+                  Placement Staff Only
+                </span>
+              </div>
+              <input 
+                type="password" 
+                value={adminSecretKey} 
+                onChange={(e) => setAdminSecretKey(e.target.value)} 
+                required 
+                className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-xl focus:border-amber-500 outline-none text-sm text-slate-900 dark:text-white font-medium shadow-xs"
+                placeholder="Enter placement cell secret passphrase..."
+              />
+              <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80">
+                Default server passphrase: <code className="font-mono font-bold bg-white/70 dark:bg-slate-900/70 px-1.5 py-0.5 rounded text-amber-900 dark:text-amber-200">CampusEdge2026</code>
+              </p>
+            </div>
+          )}
+
           {/* Submit Button */}
           <button 
             type="submit" 
