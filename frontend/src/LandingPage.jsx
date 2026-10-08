@@ -97,12 +97,6 @@ export default function LandingPage({ onNavigate }) {
           <a href="#features" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Features</a>
           <a href="#how-it-works" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">How It Works</a>
           <a href="#faq" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">FAQs</a>
-          <button 
-            onClick={() => onNavigate('admin')} 
-            className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors flex items-center gap-1 cursor-pointer font-bold"
-          >
-            <span>👑</span> Admin Deck
-          </button>
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
