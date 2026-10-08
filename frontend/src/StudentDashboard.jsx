@@ -894,199 +894,265 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
               </div>
 
               {/* ========================================================
-                  TODAY'S PLACEMENT MISSION (3 ACTION-ORIENTED GOALS)
+                  UNIFIED PLACEMENT WORKSPACE (ALL MODULES - CLEAN & SIMPLE)
                   ======================================================== */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                   <div>
                     <h2 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                      <span>🎯</span> Today's Placement Mission
+                      <span>⚡</span> Placement Workspace & Tools
                     </h2>
-                    <p className="text-xs text-slate-500">3 recommended actions to keep your streak and placement ranking strong</p>
+                    <p className="text-xs text-slate-500">Every feature at your fingertips — practice, interview simulations, and recruitment drives</p>
                   </div>
-                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-500/30">
-                    {completedMissionsCount} of 3 Done
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2.5 py-1 rounded-xl border border-indigo-200 dark:border-indigo-500/30">
+                      🎯 Daily Goal: {completedMissionsCount}/3 Done
+                    </span>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-                  
-                  {/* Mission 1: Coding Challenge */}
-                  <div 
-                    onClick={() => { setActiveTab('codingArena'); playSound('click'); }}
-                    className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-cyan-500/60 shadow-xs hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-2xl group-hover:scale-110 transition-transform">💻</span>
-                        <span className="text-[10px] font-black uppercase text-cyan-800 dark:text-cyan-300 bg-cyan-100 dark:bg-cyan-950 px-2 py-0.5 rounded-md">
-                          +150 XP
-                        </span>
-                      </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-cyan-600 transition">
-                        Solve Today's Algorithm
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-snug">
-                        Run Python, JavaScript, Java, or C++ with test cases in the live compiler.
-                      </p>
-                    </div>
-
-                    <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-cyan-600 dark:text-cyan-400">
-                      <span>{isCodingDone ? '✅ Challenge Completed' : 'Solve Challenge'}</span>
-                      <span>➔</span>
-                    </div>
-                  </div>
-
-                  {/* Mission 2: 10-Minute Mock Test */}
-                  <div 
-                    onClick={() => { setActiveTab('mockTests'); playSound('click'); }}
-                    className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500/60 shadow-xs hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-2xl group-hover:scale-110 transition-transform">📝</span>
-                        <span className="text-[10px] font-black uppercase text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-950 px-2 py-0.5 rounded-md">
-                          +100 XP
-                        </span>
-                      </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-indigo-600 transition">
-                        10-Min Knowledge Sprint
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-snug">
-                        Timed MCQ assessment across DBMS, Operating Systems, or Data Structures.
-                      </p>
-                    </div>
-
-                    <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                      <span>{isMockDone ? `✅ Taken (${testHistory.length} completed)` : 'Start 10-min Quiz'}</span>
-                      <span>➔</span>
-                    </div>
-                  </div>
-
-                  {/* Mission 3: Resume ATS Audit */}
-                  <div 
-                    onClick={() => { setActiveTab('resumeChecker'); playSound('click'); }}
-                    className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-rose-500/60 shadow-xs hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-2xl group-hover:scale-110 transition-transform">📄</span>
-                        <span className="text-[10px] font-black uppercase text-rose-800 dark:text-rose-300 bg-rose-100 dark:bg-rose-950 px-2 py-0.5 rounded-md">
-                          +50 XP
-                        </span>
-                      </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-rose-600 transition">
-                        Scan Placement Resume
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-snug">
-                        Check ATS keyword compatibility against Software Engineer & Data roles.
-                      </p>
-                    </div>
-
-                    <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-rose-600 dark:text-rose-400">
-                      <span>{latestAtsScore ? `✅ ATS Score: ${latestAtsScore.score}/100` : 'Analyze Resume'}</span>
-                      <span>➔</span>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              {/* ========================================================
-                  PRIMARY LAUNCHPAD: 4 ESSENTIAL PLACEMENT FOCUS CARDS
-                  ======================================================== */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>⚡</span> Key Modules
-                  </h2>
-                  <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold hidden sm:inline">
-                    Click to launch workspace
-                  </span>
-                </div>
-
+                {/* Unified High-Clarity Grid with Integrated Mission Badges */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                   
-                  {/* Card 1: Coding Arena */}
+                  {/* 1. Coding Arena */}
                   <div 
                     onClick={() => { setActiveTab('codingArena'); playSound('click'); }}
-                    className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-cyan-500 transition-all cursor-pointer group shadow-xs hover:shadow-lg flex flex-col justify-between"
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-cyan-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
                   >
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-950/80 border border-cyan-200 dark:border-cyan-500/30 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
-                        💻
+                      <div className="flex justify-between items-start mb-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-cyan-50 dark:bg-cyan-950/80 border border-cyan-200 dark:border-cyan-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                          💻
+                        </div>
+                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                          isCodingDone 
+                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' 
+                            : 'bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300'
+                        }`}>
+                          {isCodingDone ? '✓ Done' : '+150 XP'}
+                        </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-cyan-600 transition">Coding Arena</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                        Solve real coding interview questions in Python, JS, Java & C++ with live test cases.
+                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-cyan-600 transition">Coding Arena</h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        Multi-language browser compiler (Python, JS, Java, C++) with test cases.
                       </p>
                     </div>
-                    <div className="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-cyan-600 dark:text-cyan-400">
-                      <span>Launch Editor</span>
-                      <span>→</span>
+                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-cyan-600 dark:text-cyan-400">
+                      <span>Launch Compiler</span>
+                      <span>➔</span>
                     </div>
                   </div>
 
-                  {/* Card 2: Mock Tests */}
+                  {/* 2. Mock Test Arena */}
                   <div 
                     onClick={() => { setActiveTab('mockTests'); playSound('click'); }}
-                    className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 transition-all cursor-pointer group shadow-xs hover:shadow-lg flex flex-col justify-between"
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
                   >
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
-                        📝
+                      <div className="flex justify-between items-start mb-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                          📝
+                        </div>
+                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                          isMockDone 
+                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' 
+                            : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300'
+                        }`}>
+                          {isMockDone ? `✓ ${testHistory.length} Taken` : '+100 XP'}
+                        </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-indigo-600 transition">Mock Test Arena</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                        Timed university assessments across 17 engineering subjects with 2,050+ authentic questions.
+                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-indigo-600 transition">Mock Test Arena</h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        Timed screening assessments with auto-submit countdown & ranking.
                       </p>
                     </div>
-                    <div className="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                      <span>Start Assessment</span>
-                      <span>→</span>
+                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                      <span>Start Test</span>
+                      <span>➔</span>
                     </div>
                   </div>
 
-                  {/* Card 3: AI HR Simulator */}
+                  {/* 3. Self-Paced Practice */}
+                  <div 
+                    onClick={() => { setActiveTab('practice'); playSound('click'); }}
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-amber-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                          ⚡
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded-md">
+                          Self-Paced
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-amber-600 transition">Practice Mode</h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        Topic-by-topic questions with instant explanations and bookmarking.
+                      </p>
+                    </div>
+                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-amber-600 dark:text-amber-400">
+                      <span>Browse Questions</span>
+                      <span>➔</span>
+                    </div>
+                  </div>
+
+                  {/* 4. AI Voice HR Simulator */}
                   <div 
                     onClick={() => { setActiveTab('aiInterview'); playSound('click'); }}
-                    className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-500 transition-all cursor-pointer group shadow-xs hover:shadow-lg flex flex-col justify-between"
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
                   >
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
-                        🎙️
+                      <div className="flex justify-between items-start mb-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                          🎙️
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-purple-800 dark:text-purple-300 bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded-md">
+                          Gemini Voice
+                        </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-purple-600 transition">AI HR Simulator</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                        Live speech interviews for technical & HR behavioral rounds with instant AI grading.
+                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-purple-600 transition">AI HR Simulator</h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        Spoken technical & HR behavioral interview practice with instant AI feedback.
                       </p>
                     </div>
-                    <div className="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-purple-600 dark:text-purple-400">
-                      <span>Practice Speech</span>
-                      <span>→</span>
+                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-purple-600 dark:text-purple-400">
+                      <span>Simulate Speech</span>
+                      <span>➔</span>
                     </div>
                   </div>
 
-                  {/* Card 4: Placement Drives & Eligibility */}
+                  {/* 5. ATS Resume Scanner */}
+                  <div 
+                    onClick={() => { setActiveTab('resumeChecker'); playSound('click'); }}
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-rose-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                          📄
+                        </div>
+                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${
+                          isResumeDone 
+                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' 
+                            : 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
+                        }`}>
+                          {isResumeDone ? `${latestAtsScore.score}/100` : '+50 XP'}
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-rose-600 transition">ATS Resume Scanner</h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        Upload PDF resume to get keyword score and Fortune 500 job matching.
+                      </p>
+                    </div>
+                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-rose-600 dark:text-rose-400">
+                      <span>Audit Resume</span>
+                      <span>➔</span>
+                    </div>
+                  </div>
+
+                  {/* 6. Campus Drives & Alerts */}
                   <div 
                     onClick={() => { setActiveTab('drives'); playSound('click'); }}
-                    className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-all cursor-pointer group shadow-xs hover:shadow-lg flex flex-col justify-between"
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
                   >
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
-                        🏢
+                      <div className="flex justify-between items-start mb-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                          📢
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-md">
+                          Live Drives
+                        </span>
                       </div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-emerald-600 transition">Campus Drives & Jobs</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                        Track upcoming university recruitment drives, application proof, and MNC cutoffs.
+                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-emerald-600 transition">Campus Drives & Jobs</h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        Track upcoming company recruitment circulars, deadlines, and registration.
                       </p>
                     </div>
-                    <div className="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                      <span>Explore Circulars</span>
-                      <span>→</span>
+                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <span>View Drives</span>
+                      <span>➔</span>
                     </div>
                   </div>
 
+                  {/* 7. Company Eligibility */}
+                  <div 
+                    onClick={() => { setActiveTab('eligibility'); playSound('click'); }}
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-teal-50 dark:bg-teal-950/80 border border-teal-200 dark:border-teal-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                          🏢
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-teal-800 dark:text-teal-300 bg-teal-100 dark:bg-teal-950 px-2 py-0.5 rounded-md">
+                          MNC Cutoffs
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-teal-600 transition">Company Eligibility</h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        Check CGPA requirements, backlog limits, and eligible branches.
+                      </p>
+                    </div>
+                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-teal-600 dark:text-teal-400">
+                      <span>Check Cutoffs</span>
+                      <span>➔</span>
+                    </div>
+                  </div>
+
+                  {/* 8. 1v1 Battle */}
+                  <div 
+                    onClick={() => { setActiveTab('1v1Battle'); playSound('click'); }}
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-pink-500 transition-all cursor-pointer group shadow-xs hover:shadow-md flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-pink-50 dark:bg-pink-950/80 border border-pink-200 dark:border-pink-500/30 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                          ⚔️
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-pink-800 dark:text-pink-300 bg-pink-100 dark:bg-pink-950 px-2 py-0.5 rounded-md">
+                          1v1 Duel
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-slate-900 dark:text-white text-xs group-hover:text-pink-600 transition">1v1 Coding Battle</h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        Challenge friends or classmates in real-time speed coding duels.
+                      </p>
+                    </div>
+                    <div className="mt-3.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold text-pink-600 dark:text-pink-400">
+                      <span>Enter Arena</span>
+                      <span>➔</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Secondary Quick Access Bar for Analytics, Leaderboard & Roadmap */}
+                <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-white dark:bg-slate-900/90 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
+                  <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5 pl-1">
+                    <span>🧭</span> Career Growth Navigation:
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => { setActiveTab('progress'); playSound('click'); }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 transition cursor-pointer"
+                    >
+                      📈 Score Analytics
+                    </button>
+                    <button 
+                      onClick={() => { setActiveTab('leaderboard'); playSound('click'); }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-amber-600 transition cursor-pointer"
+                    >
+                      🏆 Campus Leaderboard
+                    </button>
+                    <button 
+                      onClick={() => { setActiveTab('roadmap'); playSound('click'); }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-purple-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-purple-600 transition cursor-pointer"
+                    >
+                      🗺️ AI Study Roadmap
+                    </button>
+                  </div>
                 </div>
               </div>
 
