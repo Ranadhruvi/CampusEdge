@@ -85,9 +85,10 @@ export default function LandingPage({ onNavigate }) {
       </div>
 
       {/* Floating Modern Header */}
-      <header className="border-b border-slate-200 dark:border-slate-800/80 bg-white/85 dark:bg-slate-950/85 backdrop-blur-2xl px-6 md:px-12 py-3.5 flex justify-between items-center sticky top-0 z-50 shadow-sm dark:shadow-xl">
+      <header className="border-b border-slate-200 dark:border-slate-800/80 bg-white/85 dark:bg-slate-950/85 backdrop-blur-2xl px-3 sm:px-6 md:px-12 py-3 flex justify-between items-center sticky top-0 z-50 shadow-sm dark:shadow-xl">
         <CampusEdgeLogo 
-          size="md" 
+          size="sm" 
+          className="sm:scale-100 origin-left"
           onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
         />
         
@@ -98,36 +99,38 @@ export default function LandingPage({ onNavigate }) {
           <a href="#faq" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">FAQs</a>
         </nav>
 
-        <div className="space-x-3 flex items-center">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           <ThemeToggle />
           <button 
             onClick={() => onNavigate('login')}
-            className="text-slate-700 dark:text-slate-300 font-bold hover:text-slate-900 dark:hover:text-white transition px-4 py-2 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer"
+            className="text-slate-700 dark:text-slate-300 font-bold hover:text-slate-900 dark:hover:text-white transition px-2.5 sm:px-4 py-2 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer"
           >
             Log In
           </button>
           
           <button 
             onClick={() => onNavigate('register')}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-4 py-2 rounded-xl font-black text-xs shadow-lg shadow-indigo-600/30 transition transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5"
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-3 sm:px-4 py-2 rounded-xl font-black text-xs shadow-lg shadow-indigo-600/30 transition transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-1"
           >
-            <span>Get Started</span> ➔
+            <span className="hidden sm:inline">Get Started</span>
+            <span className="sm:hidden">Join</span>
+            <span>➔</span>
           </button>
         </div>
       </header>
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center px-6 pt-12 pb-16 text-center max-w-5xl mx-auto w-full">
+      <main className="flex-1 flex flex-col items-center px-4 sm:px-6 pt-8 sm:pt-12 pb-16 text-center max-w-5xl mx-auto w-full">
         
         {/* Real-time Badge */}
-        <div className="inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/40 px-3.5 py-1.5 rounded-full text-indigo-700 dark:text-indigo-300 font-bold text-xs uppercase tracking-wider mb-6 shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping"></span>
-          <span>{liveStudentsCount.toLocaleString()} Students Active Online Now</span>
-          <span className="bg-indigo-100 dark:bg-indigo-600/40 text-indigo-800 dark:text-indigo-200 text-[10px] px-2 py-0.5 rounded-full font-black">v2.5</span>
+        <div className="inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/40 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-indigo-700 dark:text-indigo-300 font-bold text-[11px] sm:text-xs uppercase tracking-wider mb-6 shadow-xs max-w-full">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping shrink-0"></span>
+          <span className="truncate">{liveStudentsCount.toLocaleString()} Students Active Online</span>
+          <span className="bg-indigo-100 dark:bg-indigo-600/40 text-indigo-800 dark:text-indigo-200 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-black shrink-0">v2.5</span>
         </div>
 
         {/* Hero Title */}
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight mb-4 max-w-3xl leading-[1.15] text-slate-900 dark:text-white">
+        <h1 className="text-2xl sm:text-5xl md:text-6xl font-black tracking-tight mb-4 max-w-3xl leading-[1.18] sm:leading-[1.15] text-slate-900 dark:text-white">
           Crack your campus placements with{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400">
             Intelligent AI.
@@ -208,14 +211,14 @@ export default function LandingPage({ onNavigate }) {
                 <button
                   key={tab.id}
                   onClick={() => setActiveDemoTab(tab.id)}
-                  className={`flex-1 min-w-[140px] py-2.5 px-3 rounded-2xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 min-w-[110px] sm:min-w-[140px] py-2 sm:py-2.5 px-2 sm:px-3 rounded-2xl text-[11px] sm:text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 ${
                     activeDemoTab === tab.id
                       ? 'bg-indigo-600 text-white shadow-md'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100/60 dark:bg-slate-900/60 hover:bg-slate-200 dark:hover:bg-slate-900'
                   }`}
                 >
                   <span>{tab.icon}</span>
-                  <span>{tab.label}</span>
+                  <span className="truncate">{tab.label}</span>
                 </button>
               ))}
             </div>

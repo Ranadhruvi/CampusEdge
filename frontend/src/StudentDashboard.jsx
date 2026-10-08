@@ -572,7 +572,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   </button>
 
                   {showNotifDropdown && (
-                    <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl py-4 px-4 z-50 animate-fade-in space-y-3">
+                    <div className="absolute right-0 mt-3 w-[calc(100vw-2rem)] max-w-xs sm:max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl py-4 px-4 z-50 animate-fade-in space-y-3">
                       <div className="flex justify-between items-center border-b pb-2 border-slate-200 dark:border-slate-800">
                         <h3 className="font-black text-slate-900 dark:text-white text-xs">Placement Notifications</h3>
                         <button onClick={() => setShowNotifDropdown(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs cursor-pointer">✕</button>
@@ -672,7 +672,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
 
               {/* Segmented Switcher for Assessments */}
               {isAssessmentTab && (
-                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl">
+                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-x-auto max-w-full pb-0.5">
                   {[
                     { id: 'codingArena', label: '💻 Coding Arena' },
                     { id: 'mockTests', label: '📝 Mock Test' },
@@ -760,7 +760,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                     <label className="block font-bold text-slate-600 dark:text-slate-400 mb-1">Current City / Location (Address)</label>
                     <input type="text" value={editAddress} onChange={(e) => setEditAddress(e.target.value)} required placeholder="e.g. Bangalore, Karnataka" className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl font-medium outline-none focus:border-indigo-500" />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block font-bold text-slate-600 dark:text-slate-400 mb-1">Date of Birth</label>
                       <input type="date" value={editDob} onChange={(e) => setEditDob(e.target.value)} className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl outline-none" />
@@ -774,7 +774,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   <hr className="my-2 border-slate-200 dark:border-slate-800" />
                   <p className="font-bold text-slate-500 uppercase text-[10px]">Change Password (Optional)</p>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-slate-500 mb-1">Current Password</label>
                       <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="••••••••" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl outline-none" />

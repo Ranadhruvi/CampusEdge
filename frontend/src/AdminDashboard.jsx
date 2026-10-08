@@ -58,6 +58,7 @@ function formatInterviewDialogues(feedback) {
 
 export default function AdminDashboard({ onLogout }) {
   const [activeAdminTab, setActiveAdminTab] = useState('questions');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { showSuccess, showError, showWarning, showInfo } = useToast();
 
   const [file, setFile] = useState(null);
@@ -541,16 +542,35 @@ export default function AdminDashboard({ onLogout }) {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex font-sans selection:bg-indigo-600 selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex font-sans selection:bg-indigo-600 selection:text-white relative">
       
+      {/* Mobile Drawer Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 lg:hidden animate-fade-in"
+        />
+      )}
+
       {/* Executive Sidebar Navigation */}
-      <aside className="w-68 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-r border-slate-200/80 dark:border-slate-800/80 p-5 sm:p-6 flex flex-col min-h-screen shadow-lg z-20">
-        <div className="mb-6">
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50 flex flex-col 
+        w-68 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r border-slate-200/80 dark:border-slate-800/80 
+        p-5 sm:p-6 transition-transform duration-300 shadow-xl lg:shadow-none min-h-screen
+        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="mb-6 flex items-center justify-between">
           <CampusEdgeLogo 
             size="sm" 
             subtitle="Executive Command Hub"
-            onClick={() => setActiveAdminTab('questions')}
+            onClick={() => { setActiveAdminTab('questions'); setMobileMenuOpen(false); }}
           />
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="lg:hidden text-slate-400 hover:text-slate-900 dark:hover:text-white p-1 text-sm font-bold"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Live System Heartbeat Pill */}
@@ -573,7 +593,7 @@ export default function AdminDashboard({ onLogout }) {
             return (
               <button 
                 key={item.id}
-                onClick={() => setActiveAdminTab(item.id)} 
+                onClick={() => { setActiveAdminTab(item.id); setMobileMenuOpen(false); }} 
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl font-bold text-xs transition-all duration-200 cursor-pointer ${
                   isActive 
                     ? 'bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 text-white shadow-lg shadow-indigo-600/30 scale-[1.02]' 
@@ -639,21 +659,30 @@ export default function AdminDashboard({ onLogout }) {
 
         {/* Top Header Banner */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8 relative z-10">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">
-                Command Deck
-              </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                • Campus Placement Grid 2026
-              </span>
+          <div className="flex items-start gap-3">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold text-base shadow-xs shrink-0 mt-0.5 cursor-pointer"
+              title="Open Navigation"
+            >
+              ☰
+            </button>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">
+                  Command Deck
+                </span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  • Campus Placement Grid 2026
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                Admin Operations Console
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm mt-0.5">
+                Control question repositories, monitor candidate ATS metrics, inspect proctoring logs, and broadcast placement notices.
+              </p>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-              Admin Operations Console
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm mt-0.5">
-              Control question repositories, monitor candidate ATS metrics, inspect proctoring logs, and broadcast placement notices.
-            </p>
           </div>
 
           <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">

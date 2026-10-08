@@ -103,7 +103,7 @@ export default function CampusEdgeLogo({
             </span>
           </div>
           {subtitle && (
-            <span className={`font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 -mt-0.5 ${current.subSize}`}>
+            <span className={`font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 -mt-0.5 truncate max-w-[130px] sm:max-w-none ${current.subSize}`}>
               {subtitle}
             </span>
           )}

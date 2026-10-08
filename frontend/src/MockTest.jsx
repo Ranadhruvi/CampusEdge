@@ -601,7 +601,7 @@ export default function MockTest({ questions = [], onEndTest }) {
   const progressPercent = Math.round(((currentIndex + 1) / questions.length) * 100);
 
   return (
-    <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900/95 backdrop-blur-2xl p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-sans animate-fade-in">
+    <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900/95 backdrop-blur-2xl p-3.5 sm:p-6 md:p-8 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-sans animate-fade-in">
       
       {/* Top HUD: Subject, Timer, and Question Counter */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-200 dark:border-slate-800 pb-5">

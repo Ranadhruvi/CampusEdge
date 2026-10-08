@@ -517,7 +517,7 @@ export default function CodingArena({ userEmail, userName, onBack }) {
             </div>
           )}
 
-          <div className="bg-slate-100 dark:bg-slate-950 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 flex text-xs font-bold">
+          <div className="bg-slate-100 dark:bg-slate-950 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap gap-1 text-xs font-bold">
             <button
               onClick={handleRequestSwitchToPractice}
               className={`px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 ${
@@ -609,7 +609,7 @@ export default function CodingArena({ userEmail, userName, onBack }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* ================= LEFT COLUMN: PROBLEM / LOGIC / HINTS ================= */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl overflow-hidden flex flex-col h-[750px]">
+        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl overflow-hidden flex flex-col h-auto min-h-[420px] lg:h-[750px]">
           
           {/* Left Column Tabs */}
           <div className="bg-slate-100 dark:bg-slate-950 p-2 border-b border-slate-200 dark:border-slate-800 flex gap-2">
@@ -864,7 +864,7 @@ export default function CodingArena({ userEmail, userName, onBack }) {
         </div>
 
         {/* ================= RIGHT COLUMN: CODE EDITOR & TEST RESULTS ================= */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl overflow-hidden flex flex-col h-[750px]">
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl overflow-hidden flex flex-col h-auto min-h-[480px] lg:h-[750px]">
           
           {/* Editor Header Bar */}
           <div className="bg-slate-100 dark:bg-slate-950 p-3 border-b border-slate-200 dark:border-slate-800 flex flex-wrap justify-between items-center gap-3">
@@ -918,13 +918,13 @@ export default function CodingArena({ userEmail, userName, onBack }) {
           </div>
 
           {/* Interactive Code Editor Area */}
-          <div className="flex-1 bg-slate-50 dark:bg-slate-950 p-4 font-mono text-xs flex flex-col relative overflow-hidden">
+          <div className="flex-1 min-h-[240px] sm:min-h-[280px] bg-slate-50 dark:bg-slate-950 p-4 font-mono text-xs flex flex-col relative overflow-hidden">
             <textarea
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="// Write your code here..."
               spellCheck="false"
-              className="w-full h-full bg-transparent text-slate-900 dark:text-slate-200 resize-none outline-none font-mono text-xs leading-relaxed selection:bg-indigo-600 selection:text-white"
+              className="w-full h-full min-h-[220px] sm:min-h-[260px] bg-transparent text-slate-900 dark:text-slate-200 resize-none outline-none font-mono text-xs leading-relaxed selection:bg-indigo-600 selection:text-white"
             />
           </div>
 
