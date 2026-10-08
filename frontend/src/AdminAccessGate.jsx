@@ -139,8 +139,8 @@ export default function AdminAccessGate({ currentUser, onElevateSuccess, onLogou
       </header>
 
       {/* Center Gate Card */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 my-8">
-        <div className="w-full max-w-lg bg-slate-900/90 backdrop-blur-2xl border border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-amber-950/20 relative">
+      <main className="flex-1 flex items-center justify-center p-3.5 sm:p-6 my-4 sm:my-8">
+        <div className="w-full max-w-lg bg-slate-900/90 backdrop-blur-2xl border border-amber-500/30 rounded-3xl p-5 sm:p-8 shadow-2xl shadow-amber-950/20 relative">
           
           {/* Glowing Crown Top Badge */}
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">

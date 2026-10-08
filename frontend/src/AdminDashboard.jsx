@@ -818,8 +818,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
       {/* Executive Sidebar Navigation */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50 flex flex-col 
-        w-68 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r border-slate-200/80 dark:border-slate-800/80 
-        p-5 sm:p-6 transition-transform duration-300 shadow-xl lg:shadow-none min-h-screen
+        w-72 max-w-[85vw] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r border-slate-200/80 dark:border-slate-800/80 
+        p-4 sm:p-6 transition-transform duration-300 shadow-xl lg:shadow-none h-full lg:min-h-screen overflow-y-auto touch-scroll
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="mb-6 flex items-center justify-between">
@@ -914,7 +914,7 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-6 md:p-10 overflow-y-auto relative bg-slate-50 dark:bg-slate-950">
+      <main className="flex-1 p-3.5 sm:p-6 md:p-8 lg:p-10 overflow-y-auto relative bg-slate-50 dark:bg-slate-950 min-w-0">
         
         {/* Background Ambient Glows */}
         <div className="pointer-events-none absolute -top-24 left-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl" />
@@ -948,24 +948,24 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto justify-between lg:justify-end flex-wrap sm:flex-nowrap">
             {/* Real-Time Live Enrolled Students Counter Pill */}
             <div 
               onClick={() => setActiveAdminTab('students')}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-500/40 text-xs shadow-xs hover:border-emerald-500 transition cursor-pointer group"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-500/40 text-[11px] sm:text-xs shadow-xs hover:border-emerald-500 transition cursor-pointer group"
               title="Click to view full enrolled students roster (updates every 10s)"
             >
-              <span className="relative flex h-2.5 w-2.5">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
-              <span className="font-black text-slate-900 dark:text-white text-sm">
+              <span className="font-black text-slate-900 dark:text-white text-xs sm:text-sm">
                 {studentsList.length}
               </span>
-              <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-300">
                 Enrolled Students
               </span>
-              <span className="text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/30">
+              <span className="text-[8px] sm:text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/30">
                 LIVE
               </span>
             </div>
@@ -1102,8 +1102,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
 
         {/* Add Single Question Modal */}
         {showAddQuestionModal && (
-          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-6 sm:p-8 animate-fade-in max-h-[90vh] overflow-y-auto text-slate-900 dark:text-white space-y-5">
+          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-2.5 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-5 sm:p-8 animate-fade-in max-h-[92vh] overflow-y-auto touch-scroll text-slate-900 dark:text-white space-y-5">
               
               {/* Header */}
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
@@ -1302,8 +1302,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
 
         {/* Bulk Paste JSON Modal */}
         {showPasteJsonModal && (
-          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-6 sm:p-8 animate-fade-in max-h-[90vh] overflow-y-auto text-slate-900 dark:text-white space-y-4">
+          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-2.5 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-5 sm:p-8 animate-fade-in max-h-[92vh] overflow-y-auto touch-scroll text-slate-900 dark:text-white space-y-4">
               
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
@@ -1394,8 +1394,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
 
         {/* Student Detail & Activity Modal */}
         {selectedStudent && (
-          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-8 animate-fade-in max-h-[90vh] overflow-y-auto text-slate-900 dark:text-white space-y-6">
+          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-2.5 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-5 sm:p-8 animate-fade-in max-h-[92vh] overflow-y-auto touch-scroll text-slate-900 dark:text-white space-y-6">
               <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-black text-lg flex items-center justify-center shadow-inner">
@@ -2448,8 +2448,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
                 </div>
               ) : (
                 // ================= MODE 3: ALL QUESTIONS TABLE =================
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                <div className="overflow-x-auto touch-scroll">
+                  <table className="w-full min-w-[640px] text-left text-xs text-slate-700 dark:text-slate-300">
                     <thead className="bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-400 font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
                       <tr>
                         <th className="p-4 w-12 text-center">
@@ -2887,8 +2887,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
                     </div>
                   ) : (
                     // ================= ALL SUBMISSIONS FLAT TABLE =================
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                    <div className="overflow-x-auto touch-scroll">
+                      <table className="w-full min-w-[640px] text-left text-xs text-slate-700 dark:text-slate-300">
                         <thead className="bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-400 font-bold uppercase border-b border-slate-200 dark:border-slate-800">
                           <tr>
                             <th className="p-4">Student Email</th>
@@ -3110,8 +3110,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
                     </div>
                   ) : (
                     // ================= ALL CODING SUBMISSIONS FLAT TABLE =================
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                    <div className="overflow-x-auto touch-scroll">
+                      <table className="w-full min-w-[640px] text-left text-xs text-slate-700 dark:text-slate-300">
                         <thead className="bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-400 font-bold uppercase border-b border-slate-200 dark:border-slate-800">
                           <tr>
                             <th className="p-4">Student</th>
@@ -3670,8 +3670,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
 
         {/* MODAL: VIEW SPECIFIC INTERVIEW TRANSCRIPT */}
         {selectedInterview && (
-          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
+          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 animate-fade-in">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-hidden flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
               
               <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
                 <div>
@@ -3714,8 +3714,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
 
         {/* MODAL: VIEW SPECIFIC TEST QUESTION & ANSWERS BREAKDOWN */}
         {selectedTestForReview && (
-          <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full max-h-[88vh] overflow-hidden flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
+          <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 animate-fade-in">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
               
               {/* Modal Header */}
               <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
@@ -3895,8 +3895,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
 
         {/* MODAL: VIEW SPECIFIC CODING SUBMISSION CODE */}
         {selectedCodeForReview && (
-          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
+          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 animate-fade-in">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
               
               {/* Modal Header */}
               <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-start bg-slate-50 dark:bg-slate-950">

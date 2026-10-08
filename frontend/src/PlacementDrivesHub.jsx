@@ -649,8 +649,8 @@ export default function PlacementDrivesHub({ userEmail, userName, userRole, user
 
       {/* Student Application Confirmation Modal */}
       {selectedDrive && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg p-6 sm:p-8 animate-fade-in space-y-5 text-slate-900 dark:text-white">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-2.5 sm:p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg p-5 sm:p-8 max-h-[92vh] overflow-y-auto touch-scroll animate-fade-in space-y-5 text-slate-900 dark:text-white">
             <div className="flex justify-between items-start border-b border-slate-200 dark:border-slate-800 pb-4">
               <div>
                 <span className="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/30 px-2.5 py-0.5 rounded-md">
@@ -731,8 +731,8 @@ export default function PlacementDrivesHub({ userEmail, userName, userRole, user
 
       {/* Admin View Applicants Modal */}
       {viewingApplicantsFor && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-6 sm:p-8 animate-fade-in space-y-5 text-slate-900 dark:text-white max-h-[85vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-2.5 sm:p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-5 sm:p-8 animate-fade-in space-y-5 text-slate-900 dark:text-white max-h-[92vh] overflow-y-auto touch-scroll">
             <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
               <div>
                 <h3 className="text-lg font-black text-slate-900 dark:text-white">Registered Applicants & Statistics</h3>
@@ -773,8 +773,8 @@ export default function PlacementDrivesHub({ userEmail, userName, userRole, user
 
       {/* Admin Post Circular Modal with AI Parser */}
       {showPostModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-6 sm:p-8 animate-fade-in space-y-5 max-h-[90vh] overflow-y-auto text-slate-900 dark:text-white">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-2.5 sm:p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl p-5 sm:p-8 animate-fade-in space-y-5 max-h-[92vh] overflow-y-auto touch-scroll text-slate-900 dark:text-white">
             <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
               <div>
                 <span className="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/30 px-2.5 py-0.5 rounded-md">

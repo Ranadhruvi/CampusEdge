@@ -379,8 +379,10 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
             fixed md:static inset-y-0 left-0 z-50 flex flex-col 
             bg-white/95 dark:bg-slate-900/95 border-r border-slate-200/80 dark:border-slate-800/80 
             backdrop-blur-2xl transition-all duration-300 shadow-xl md:shadow-none
-            ${isSidebarCollapsed ? 'w-20' : 'w-64'}
+            ${mobileMenuOpen ? 'w-72 max-w-[85vw]' : (isSidebarCollapsed ? 'w-20' : 'w-64')}
+            ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'}
             ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            h-full md:h-auto overflow-y-auto touch-scroll
           `}>
             {/* Sidebar Header with Logo and Collapse Toggle */}
             <div className={`p-4 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} border-b border-slate-100 dark:border-slate-800/60`}>
@@ -532,7 +534,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
         )}
 
         {/* Main Content Stage */}
-        <main className={`flex-1 overflow-y-auto relative bg-slate-50 dark:bg-slate-950 ${isGlobalFullscreen || activeTest ? 'p-0 w-full min-h-screen' : 'p-5 sm:p-7 md:p-9'}`}>
+        <main className={`flex-1 overflow-y-auto relative bg-slate-50 dark:bg-slate-950 min-w-0 ${isGlobalFullscreen || activeTest ? 'p-0 w-full min-h-screen' : 'p-3.5 sm:p-6 md:p-8'}`}>
           
           {/* Background Ambient Glows (Matching Admin Look) */}
           <div className="pointer-events-none absolute -top-24 left-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl" />
@@ -540,29 +542,29 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
 
           {/* Top Persistent Global Header */}
           {!isGlobalFullscreen && !activeTest && (
-            <header className="flex flex-wrap items-center justify-between gap-3 mb-7 pb-4 border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md z-30">
+            <header className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 mb-6 pb-4 border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md z-30">
               
               {/* Left Breadcrumb & Mobile Menu Trigger */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <button
                   onClick={() => setMobileMenuOpen(true)}
-                  className="md:hidden w-10 h-10 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold text-base shadow-xs"
+                  className="md:hidden w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold text-base shadow-xs"
                 >
                   ☰
                 </button>
 
-                <div className="flex items-center gap-2 text-xs font-bold bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 px-3.5 py-2 rounded-2xl shadow-xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="text-slate-600 dark:text-slate-400 font-bold">CampusEdge</span>
-                  <span className="text-slate-400 dark:text-slate-500">/</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-wider text-[11px]">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-bold bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl shadow-xs min-w-0">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                  <span className="text-slate-600 dark:text-slate-400 font-bold truncate hidden xs:inline sm:inline">CampusEdge</span>
+                  <span className="text-slate-400 dark:text-slate-500 hidden xs:inline sm:inline">/</span>
+                  <span className="text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-wider text-[10px] sm:text-[11px] truncate max-w-[130px] sm:max-w-none">
                     {navSections.flatMap(s => s.items).find(n => n.id === activeTab)?.label || 'Candidate Suite'}
                   </span>
                 </div>
               </div>
 
               {/* Right Global Widgets & Controls */}
-              <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+              <div className="flex items-center gap-1.5 sm:gap-3 ml-auto">
                 
                 {/* Live Server Status Pill (Matching Admin) */}
                 <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs shadow-xs">
@@ -732,7 +734,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
             <div className="mb-6 p-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3 animate-fade-in">
               <button
                 onClick={() => { setActiveTab('dashboard'); playSound('click'); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition cursor-pointer shrink-0"
               >
                 <span>←</span>
                 <span>Back to Hub</span>
@@ -740,7 +742,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
 
               {/* Segmented Switcher for Assessments */}
               {isAssessmentTab && (
-                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-x-auto max-w-full pb-0.5">
+                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-x-auto touch-scroll no-scrollbar max-w-full pb-0.5">
                   {[
                     { id: 'codingArena', label: '💻 Coding Arena' },
                     { id: 'mockTests', label: '📝 Mock Test' },
@@ -749,7 +751,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                     <button
                       key={tab.id}
                       onClick={() => { setActiveTab(tab.id); playSound('click'); }}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer whitespace-nowrap shrink-0 ${
                         activeTab === tab.id
                           ? 'bg-indigo-600 text-white shadow-xs'
                           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -763,7 +765,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
 
               {/* Segmented Switcher for Career & Recruitment */}
               {isCareerTab && (
-                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-x-auto">
+                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-x-auto touch-scroll no-scrollbar max-w-full pb-0.5">
                   {[
                     { id: 'resumeChecker', label: '📄 ATS Resume' },
                     { id: 'aiInterview', label: '🎙️ AI Interview' },
@@ -773,7 +775,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                     <button
                       key={tab.id}
                       onClick={() => { setActiveTab(tab.id); playSound('click'); }}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer shrink-0 ${
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer shrink-0 whitespace-nowrap ${
                         activeTab === tab.id
                           ? 'bg-indigo-600 text-white shadow-xs'
                           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -787,7 +789,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
 
               {/* Segmented Switcher for Analytics */}
               {isGrowthTab && (
-                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl">
+                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl overflow-x-auto touch-scroll no-scrollbar max-w-full pb-0.5">
                   {[
                     { id: 'progress', label: '📈 My Growth' },
                     { id: 'leaderboard', label: '🏆 Leaderboard' },
@@ -796,7 +798,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                     <button
                       key={tab.id}
                       onClick={() => { setActiveTab(tab.id); playSound('click'); }}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer whitespace-nowrap shrink-0 ${
                         activeTab === tab.id
                           ? 'bg-indigo-600 text-white shadow-xs'
                           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -812,8 +814,8 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
 
           {/* Manage Profile Modal */}
           {isEditingProfile && (
-            <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg p-6 sm:p-8 animate-fade-in text-slate-900 dark:text-white space-y-5">
+            <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-2.5 sm:p-4">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg p-5 sm:p-8 max-h-[92vh] overflow-y-auto touch-scroll animate-fade-in text-slate-900 dark:text-white space-y-5">
                 <div className="flex justify-between items-center">
                   <h2 className="text-lg font-black">Edit Student Profile Details</h2>
                   <button onClick={() => setIsEditingProfile(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold cursor-pointer">✕</button>
@@ -920,14 +922,14 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
 
                 {/* Readiness Quick Progress Capsule */}
                 <div className="w-full lg:w-auto p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex flex-wrap sm:flex-nowrap items-center gap-4 shrink-0">
-                  <div>
+                  <div className="w-full sm:w-auto">
                     <div className="flex items-center justify-between text-xs font-bold mb-1">
                       <span className="text-slate-500">Placement Readiness</span>
                       <span className="text-emerald-600 dark:text-emerald-400 font-black">
                         {Math.min(95, 45 + (testHistory.length * 5) + (codingHistory.length * 5))}%
                       </span>
                     </div>
-                    <div className="w-40 sm:w-48 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className="w-full sm:w-48 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
                         style={{ width: `${Math.min(95, 45 + (testHistory.length * 5) + (codingHistory.length * 5))}%` }}
@@ -938,7 +940,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
 
                   <button
                     onClick={() => { playSound('click'); setShowCertModal(true); }}
-                    className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer shrink-0"
+                    className="w-full sm:w-auto text-center px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer shrink-0"
                   >
                     🏆 Certificate
                   </button>
@@ -1353,7 +1355,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                 </div>
 
                 {/* Filter Pills */}
-                <div className="flex flex-wrap items-center gap-2 relative z-10">
+                <div className="flex items-center gap-2 relative z-10 overflow-x-auto no-scrollbar touch-scroll pb-1 -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap">
                   {[
                     { id: 'all', label: 'All Subjects (17)' },
                     { id: 'core', label: '💻 Core Computer Science' },

@@ -107,7 +107,7 @@ export default function Modal({
 
   return (
     <div 
-      className={`fixed inset-0 ${zIndex} bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in`}
+      className={`fixed inset-0 ${zIndex} bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-4 animate-fade-in`}
       onClick={handleBackdropClick}
       aria-hidden={!isOpen}
     >
@@ -118,14 +118,14 @@ export default function Modal({
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={descriptionId}
         tabIndex="-1"
-        className={`bg-white dark:bg-slate-900 rounded-3xl ${maxWidth} w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white space-y-6 animate-scale-up relative outline-none ${className}`}
+        className={`bg-white dark:bg-slate-900 rounded-3xl ${maxWidth} w-full max-h-[92vh] overflow-y-auto touch-scroll p-4 sm:p-6 md:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white space-y-5 sm:space-y-6 animate-scale-up relative outline-none ${className}`}
       >
         {showCloseButton && onClose && (
           <button
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="absolute top-5 right-5 text-slate-400 hover:text-slate-900 dark:hover:text-white font-black text-sm w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center justify-center cursor-pointer"
+            className="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 z-20 text-slate-400 hover:text-slate-900 dark:hover:text-white font-black text-sm w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center justify-center cursor-pointer shadow-xs"
           >
             ✕
           </button>
