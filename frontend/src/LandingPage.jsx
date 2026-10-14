@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import CampusEdgeLogo from './CampusEdgeLogo';
 import { ThemeToggle } from './ThemeContext';
-import { API_BASE } from './api';
+import { API_BASE, apiFetch } from './api';
+import { useToast } from './Toast';
 import LandingChatbot from './LandingChatbot';
 
-export default function LandingPage({ onNavigate }) {
+export default function LandingPage({ onNavigate, user, onLogout }) {
   const [openFaq, setOpenFaq] = useState(null);
+  const { showSuccess, showError } = useToast();
 
   const handleGoogleAuth = () => {
-    window.location.href = `${API_BASE}/api/auth/google`;
+    const clientOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
+    window.location.href = `${API_BASE}/api/auth/google?role=student&clientUrl=${encodeURIComponent(clientOrigin)}`;
   };
 
   const features = [
@@ -102,20 +105,40 @@ export default function LandingPage({ onNavigate }) {
         <div className="flex items-center gap-2 sm:gap-3">
           <ThemeToggle />
 
-          <button 
-            onClick={() => onNavigate('login')}
-            className="text-slate-700 dark:text-slate-300 font-bold hover:text-slate-900 dark:hover:text-white transition px-3 sm:px-4 py-2 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer"
-          >
-            Log In
-          </button>
-          
-          <button 
-            onClick={() => onNavigate('register')}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-4 py-2 rounded-xl font-black text-xs shadow-md shadow-indigo-600/20 transition transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5"
-          >
-            <span>Get Started</span>
-            <span>➔</span>
-          </button>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => onNavigate(user.role === 'admin' ? 'admin' : 'student')}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition px-3.5 py-2 text-xs rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5"
+              >
+                <span>{user.role === 'admin' ? '👑 Admin Deck' : '🎓 Student Portal'}</span>
+                <span>➔</span>
+              </button>
+              <button 
+                onClick={onLogout}
+                className="text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 font-bold transition px-2.5 py-2 text-xs rounded-xl cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <>
+              <button 
+                onClick={() => onNavigate('login')}
+                className="text-slate-700 dark:text-slate-300 font-bold hover:text-slate-900 dark:hover:text-white transition px-3 sm:px-4 py-2 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer"
+              >
+                Log In
+              </button>
+              
+              <button 
+                onClick={() => onNavigate('register')}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-4 py-2 rounded-xl font-black text-xs shadow-md shadow-indigo-600/20 transition transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5"
+              >
+                <span>Get Started</span>
+                <span>➔</span>
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -321,9 +344,6 @@ export default function LandingPage({ onNavigate }) {
         <div className="flex gap-4 text-slate-500 dark:text-slate-400 font-medium items-center text-xs">
           <a href="#features" className="hover:text-indigo-600 dark:hover:text-white transition">Features</a>
           <a href="#faq" className="hover:text-indigo-600 dark:hover:text-white transition">FAQs</a>
-          <button onClick={() => onNavigate('admin')} className="text-amber-600 dark:text-amber-400 font-bold hover:text-amber-500 transition cursor-pointer flex items-center gap-1">
-            <span>👑</span> Admin Deck
-          </button>
           <button onClick={() => onNavigate('login')} className="hover:text-indigo-600 dark:hover:text-white transition cursor-pointer">Login</button>
         </div>
       </footer>

@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const pool = require('./db'); 
 const { JWT_SECRET, authenticateToken, requireAdmin, optionalAuth, rateLimiter } = require('./middleware/authMiddleware');
@@ -76,7 +76,8 @@ const defaultLocalOrigins = [
   'http://localhost:4173',
   'http://127.0.0.1:4173',
   'http://localhost:5000', 
-  'http://127.0.0.1:5000'
+  'http://127.0.0.1:5000',
+  'https://campus-edge-crzc.vercel.app'
 ];
 const allowedOrigins = [...new Set([...configuredOrigins, ...defaultLocalOrigins])];
 
@@ -202,6 +203,9 @@ const { seed: seedQuestionBank } = require('./scripts/seedQuestions');
         streak_data JSONB DEFAULT '{}'::jsonb,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(25);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_otp VARCHAR(6);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_otp_expires TIMESTAMP;
       ALTER TABLE test_history ADD COLUMN IF NOT EXISTS tab_switches INT DEFAULT 0;
       ALTER TABLE test_history ADD COLUMN IF NOT EXISTS tab_switch_logs JSONB;
       ALTER TABLE interview_history ADD COLUMN IF NOT EXISTS tab_switches INT DEFAULT 0;
@@ -654,50 +658,133 @@ app.put('/api/admin/promote-user/:id', authenticateToken, requireAdmin, async (r
   }
 });
 
+// Admin Change User Role (Promote to Admin or Demote to Student)
+app.put('/api/admin/change-role/:id', authenticateToken, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+  const targetRole = role === 'admin' ? 'admin' : 'student';
+  try {
+    const query = `
+      UPDATE users 
+      SET role = $2 
+      WHERE id = $1 
+      RETURNING id, name, email, role;
+    `;
+    const result = await pool.query(query, [id, targetRole]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    res.status(200).json({ 
+      message: `Successfully updated ${result.rows[0].email} role to ${targetRole}.`, 
+      user: result.rows[0] 
+    });
+  } catch (err) {
+    console.error('Error updating user role:', err);
+    res.status(500).json({ message: 'Server error updating user role.' });
+  }
+});
+
 // Mount modular sub-routers
 app.use('/api/questions', questionRoutes);
-// Google OAuth Integration
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  const backendBaseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
-  const clientBaseUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const backendBaseUrl = process.env.BACKEND_URL || (process.env.RENDER ? 'https://campusedge-backend.onrender.com' : 'http://localhost:5000');
+const callbackURL = process.env.CALLBACK_URL || `${backendBaseUrl}/api/auth/google/callback`;
+const clientBaseUrl = process.env.CLIENT_URL || (process.env.RENDER ? 'https://campus-edge-crzc.vercel.app' : 'http://localhost:5173');
 
+if (googleClientId && googleClientSecret) {
   passport.use(new GoogleStrategy({
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${backendBaseUrl}/api/auth/google/callback`
+      clientID: googleClientId,
+      clientSecret: googleClientSecret,
+      callbackURL: callbackURL
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const email = profile.emails[0].value;
-        const name = profile.displayName;
-        const existingUser = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
+        const email = (profile && profile.emails && profile.emails[0] && profile.emails[0].value) 
+          ? profile.emails[0].value.toLowerCase().trim() 
+          : null;
+
+        if (!email) {
+          return done(new Error('Google account did not provide an email address.'), null);
+        }
+
+        const name = profile.displayName 
+          || (profile.name ? `${profile.name.givenName || ''} ${profile.name.familyName || ''}`.trim() : '') 
+          || 'Google User';
+
+        // Check if user already exists (case-insensitive)
+        const existingUser = await pool.query(
+          `SELECT id, name, email, role, dob, hometown, address FROM users WHERE LOWER(email) = LOWER($1)`, 
+          [email]
+        );
 
         if (existingUser.rows.length > 0) {
           return done(null, existingUser.rows[0]);
         }
 
+        // Auto-provision student account for new Google users
         const newUser = await pool.query(
-          `INSERT INTO users (name, email, password, role, address) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-          [name, email, 'GOOGLE_AUTH_USER', 'student', 'Not Provided']
+          `INSERT INTO users (name, email, password, role, address) 
+           VALUES ($1, $2, 'GOOGLE_AUTH_USER', 'student', 'Google Verified Account') 
+           RETURNING id, name, email, role, dob, hometown, address`,
+          [name, email]
         );
         return done(null, newUser.rows[0]);
       } catch (err) {
+        console.error('Google OAuth verify error:', err);
         return done(err, null);
       }
     }
   ));
 
-  app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
+  // Initiation route with state preservation (role and clientUrl)
+  app.get('/api/auth/google', (req, res, next) => {
+    const role = req.query.role || 'student';
+    const clientUrl = req.query.clientUrl || clientBaseUrl;
+    passport.authenticate('google', { 
+      scope: ['profile', 'email'], 
+      session: false,
+      state: JSON.stringify({ role, clientUrl })
+    })(req, res, next);
+  });
 
-  app.get('/api/auth/google/callback', 
-    passport.authenticate('google', { session: false }),
-    (req, res) => {
-      const user = req.user;
+  // Callback route with error interception and role checks
+  app.get('/api/auth/google/callback', (req, res, next) => {
+    passport.authenticate('google', { session: false }, (err, user, info) => {
+      let requestedRole = 'student';
+      let returnClientUrl = clientBaseUrl;
+      try {
+        if (req.query.state) {
+          const parsedState = JSON.parse(req.query.state);
+          if (parsedState.role) requestedRole = parsedState.role;
+          if (parsedState.clientUrl) returnClientUrl = parsedState.clientUrl;
+        }
+      } catch (e) {}
+
+      if (err || !user) {
+        console.error('Google OAuth callback error:', err || info);
+        const errMsg = encodeURIComponent(err?.message || 'Google authentication failed or was cancelled.');
+        return res.redirect(`${returnClientUrl}/login?error=${errMsg}`);
+      }
+
+      // Strict role verification:
+      // If user selected admin radio, but their account in DB is student:
+      if (requestedRole === 'admin' && user.role !== 'admin') {
+        const errorMsg = encodeURIComponent("Access denied: This Google account is a Student account. Please select the 'Student' role option.");
+        return res.redirect(`${returnClientUrl}/login?error=${errorMsg}&role=student`);
+      }
+      // If user selected student radio, but their account in DB is admin:
+      if (requestedRole === 'student' && user.role === 'admin') {
+        const errorMsg = encodeURIComponent("Access denied: This Google account has Administrator privileges. Please select the 'Admin' role option.");
+        return res.redirect(`${returnClientUrl}/login?error=${errorMsg}&role=admin`);
+      }
+
       const token = jwt.sign(
-        { id: user.id, email: user.email, role: user.role },
+        { id: user.id, email: user.email, role: user.role, name: user.name },
         JWT_SECRET,
         { expiresIn: '7d' }
       );
+
       const userData = encodeURIComponent(JSON.stringify({
         id: user.id,
         name: user.name,
@@ -708,10 +795,100 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         address: user.address,
         token: token
       }));
-      res.redirect(`${clientBaseUrl}?googleUser=${userData}`);
-    }
-  );
+
+      // Route directly to destination based on verified role
+      const destination = user.role === 'admin' ? '/admin' : '/dashboard';
+      res.redirect(`${returnClientUrl}${destination}?googleUser=${userData}`);
+    })(req, res, next);
+  });
+} else {
+  // Graceful fallback when credentials are not configured
+  app.get('/api/auth/google', (req, res) => {
+    res.redirect(`${clientBaseUrl}/login?error=${encodeURIComponent("Google Sign-In is temporarily unavailable. Please sign in with your email and password.")}`);
+  });
+  app.get('/api/auth/google/callback', (req, res) => {
+    res.redirect(`${clientBaseUrl}/login?error=${encodeURIComponent("Google Sign-In is temporarily unavailable.")}`);
+  });
 }
+
+// Direct Google Identity Services (GIS) ID Token Verification API
+app.post('/api/auth/google/credential', async (req, res) => {
+  const { credential, role } = req.body;
+  if (!credential) {
+    return res.status(400).json({ message: 'Google credential token is required.' });
+  }
+
+  try {
+    const googleVerifyRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+    if (!googleVerifyRes.ok) {
+      return res.status(401).json({ message: 'Invalid or expired Google authentication token.' });
+    }
+
+    const payload = await googleVerifyRes.json();
+    const email = payload.email ? payload.email.toLowerCase().trim() : null;
+    const name = payload.name || payload.email || 'Google User';
+
+    if (!email) {
+      return res.status(400).json({ message: 'Google account did not provide a verified email.' });
+    }
+
+    // Find user in DB (case-insensitive)
+    const existingResult = await pool.query(
+      `SELECT id, name, email, role, dob, hometown, address FROM users WHERE LOWER(email) = LOWER($1)`,
+      [email]
+    );
+
+    let user;
+    if (existingResult.rows.length > 0) {
+      user = existingResult.rows[0];
+    } else {
+      // Auto-provision student account
+      const insertResult = await pool.query(
+        `INSERT INTO users (name, email, password, role, address) 
+         VALUES ($1, $2, 'GOOGLE_AUTH_USER', 'student', 'Google Verified Account') 
+         RETURNING id, name, email, role, dob, hometown, address`,
+        [name, email]
+      );
+      user = insertResult.rows[0];
+    }
+
+    // Role checks
+    const targetRole = role || 'student';
+    if (targetRole === 'admin' && user.role !== 'admin') {
+      return res.status(403).json({ 
+        message: "Access denied: This Google account is a Student account. Please select the 'Student' role option." 
+      });
+    }
+    if (targetRole === 'student' && user.role === 'admin') {
+      return res.status(403).json({ 
+        message: "Access denied: This Google account has Administrator privileges. Please select the 'Admin' role option." 
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role, name: user.name },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: `Welcome, ${user.name}! Google sign-in successful.`,
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        dob: user.dob,
+        hometown: user.hometown,
+        address: user.address
+      }
+    });
+  } catch (err) {
+    console.error('Google token verification error:', err);
+    res.status(500).json({ message: 'Server error verifying Google token.' });
+  }
+});
 
 // Google GenAI Instance
 const { GoogleGenAI } = require('@google/genai');

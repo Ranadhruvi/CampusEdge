@@ -6,6 +6,7 @@ import AdminAccessGate from './AdminAccessGate';
 import CommandPalette from './CommandPalette';
 import CampusEdgeLogo from './CampusEdgeLogo';
 import { useToast } from './Toast';
+import { apiFetch } from './api';
 
 // Code Splitting: Lazy-load large dashboard bundles
 const StudentDashboard = lazy(() => import('./StudentDashboard'));
@@ -46,6 +47,50 @@ export default function App() {
 
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 
+  // Global Google OAuth redirect listener (handles ?googleUser from backend across any landing route)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const googleUserParam = params.get('googleUser');
+    if (googleUserParam) {
+      try {
+        const parsedUser = JSON.parse(decodeURIComponent(googleUserParam));
+        localStorage.setItem('user', JSON.stringify(parsedUser));
+        setUser(parsedUser);
+        showSuccess(`Welcome back, ${parsedUser.name}!`);
+
+        // Route strictly by verified account role
+        const targetPath = parsedUser.role === 'admin' ? '/admin' : '/dashboard';
+        navigate(targetPath, { replace: true });
+      } catch (err) {
+        console.error('Failed to parse Google OAuth user in App:', err);
+      }
+    }
+  }, [location.search, navigate, showSuccess]);
+
+  // Sync live account status from database to prevent stale role redirects
+  useEffect(() => {
+    if (user && user.token) {
+      apiFetch('/api/auth/me')
+        .then((res) => {
+          if (res.ok) return res.json();
+          // If token expired or session invalid, purge stale credentials
+          if (res.status === 401 || res.status === 403) {
+            localStorage.removeItem('user');
+            setUser(null);
+          }
+          return null;
+        })
+        .then((data) => {
+          if (data && data.user) {
+            const merged = { ...user, ...data.user };
+            localStorage.setItem('user', JSON.stringify(merged));
+            setUser(merged);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
   // Global Ctrl+K / Cmd+K listener
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -78,10 +123,12 @@ export default function App() {
             path="/" 
             element={
               <LandingPage 
+                user={user}
+                onLogout={handleLogout}
                 onNavigate={(view) => {
                   if (view === 'login') navigate('/login');
                   else if (view === 'register') navigate('/register');
-                  else if (view === 'student') navigate(user ? '/dashboard' : '/login');
+                  else if (view === 'student') navigate(user ? (user.role === 'admin' ? '/admin' : '/dashboard') : '/login');
                   else if (view === 'admin') navigate('/admin');
                   else navigate('/');
                 }} 
@@ -89,25 +136,27 @@ export default function App() {
             } 
           />
 
-          {/* Authentication Pages */}
+          {/* Authentication Pages - Clean entry without forced redirects */}
           <Route 
             path="/login" 
             element={
-              user && !location.search.includes('switch') && !location.search.includes('role=') ? (
-                <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />
-              ) : (
-                <AuthPages initialMode="login" onAuthSuccess={handleAuthSuccess} />
-              )
+              <AuthPages 
+                initialMode="login" 
+                onAuthSuccess={handleAuthSuccess} 
+                currentUser={user}
+                onLogout={handleLogout}
+              />
             } 
           />
           <Route 
             path="/register" 
             element={
-              user && !location.search.includes('switch') && !location.search.includes('role=') ? (
-                <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace />
-              ) : (
-                <AuthPages initialMode="register" onAuthSuccess={handleAuthSuccess} />
-              )
+              <AuthPages 
+                initialMode="register" 
+                onAuthSuccess={handleAuthSuccess} 
+                currentUser={user}
+                onLogout={handleLogout}
+              />
             } 
           />
 

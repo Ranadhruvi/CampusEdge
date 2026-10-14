@@ -79,7 +79,7 @@ export default function AdminAccessGate({ currentUser, onElevateSuccess, onLogou
     try {
       const response = await apiFetch('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email: cleanEmail, password: adminPassword })
+        body: JSON.stringify({ email: cleanEmail, password: adminPassword, role: 'admin' })
       });
 
       const data = await response.json();
@@ -92,9 +92,7 @@ export default function AdminAccessGate({ currentUser, onElevateSuccess, onLogou
         };
 
         if (completeUser.role !== 'admin') {
-          // If role is student, inform them to use the passphrase
-          showWarning('This account is registered as a Student. Enter the admin passphrase below to elevate.');
-          setGateMode('elevate');
+          showError('Access denied: This account has Student privileges only. The Administrator Console is strictly restricted to university administrators.');
           setLoading(false);
           return;
         }
@@ -373,6 +371,13 @@ export default function AdminAccessGate({ currentUser, onElevateSuccess, onLogou
                     className="hover:text-white transition cursor-pointer"
                   >
                     ← Back to Campus Home
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/dashboard')}
+                    className="text-indigo-400 hover:text-indigo-300 font-bold transition cursor-pointer"
+                  >
+                    Student Workspace ➔
                   </button>
                 </div>
               </div>

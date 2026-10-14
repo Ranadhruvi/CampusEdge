@@ -45,6 +45,13 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
     propUser || (savedUser ? JSON.parse(savedUser) : { name: 'Student Candidate', email: 'student@campusedge.edu', role: 'student' })
   );
 
+  // Dynamically sync user state when parent App provides an updated user (e.g. from /api/auth/me)
+  useEffect(() => {
+    if (propUser) {
+      setUser(propUser);
+    }
+  }, [propUser]);
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showCertModal, setShowCertModal] = useState(false);
   const [showStreakModal, setShowStreakModal] = useState(false);
@@ -129,6 +136,17 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [alertDismissed, setAlertDismissed] = useState(false);
+
+  // Compute total completed tasks across all placement features (strictly real student submissions)
+  const completedTasksCount = (testHistory?.length || 0) + 
+                              (codingHistory?.length || 0) + 
+                              (resumesAnalyzedCount || 0) + 
+                              (interviewHistory?.length || 0);
+  const isCertificateUnlocked = completedTasksCount > 0;
+  // If 0 tasks are completed, readiness is strictly 0% and certificate cannot be generated
+  const calculatedReadinessIndex = isCertificateUnlocked
+    ? Math.min(95, 50 + (testHistory.length * 8) + (codingHistory.length * 8) + (resumesAnalyzedCount * 6) + (interviewHistory.length * 10))
+    : 0;
 
   const firstName = user?.name ? user.name.split(' ')[0] : 'Student';
   const userEmail = user?.email || 'student@campusedge.edu';
@@ -486,7 +504,9 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   </div>
                   <div className="flex justify-between">
                     <span>Placement Index:</span>
-                    <span className="text-indigo-600 dark:text-indigo-400 font-bold">{Math.min(95, 45 + (testHistory.length * 5) + (codingHistory.length * 5))}%</span>
+                    <span className={`font-bold ${isCertificateUnlocked ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                      {isCertificateUnlocked ? `${calculatedReadinessIndex}%` : '0% (Locked)'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -601,9 +621,9 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                 <div 
                   onClick={() => { playSound('click'); setShowCertModal(true); }}
                   className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-500/30 text-indigo-800 dark:text-indigo-300 font-bold text-xs cursor-pointer shadow-xs"
-                  title="Placement Readiness Index & Verified Certificate"
+                  title={isCertificateUnlocked ? "Placement Readiness Index & Verified Certificate" : "Certificate Locked — Complete 1 Task to Unlock"}
                 >
-                  <span>⚡</span>
+                  <span>{isCertificateUnlocked ? '⚡' : '🔒'}</span>
                   <span>{streakData.totalXP || 2450} XP</span>
                 </div>
 
@@ -703,7 +723,8 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                         }}
                         className="w-full text-left px-4 py-2.5 font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
                       >
-                        <span>🏆</span> Placement Certificate
+                        <span>{isCertificateUnlocked ? '🏆' : '🔒'}</span> 
+                        <span>Placement Certificate {isCertificateUnlocked ? '' : '(Locked)'}</span>
                       </button>
 
                       {user?.role === 'admin' && (
@@ -925,24 +946,32 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   <div className="w-full sm:w-auto">
                     <div className="flex items-center justify-between text-xs font-bold mb-1">
                       <span className="text-slate-500">Placement Readiness</span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-black">
-                        {Math.min(95, 45 + (testHistory.length * 5) + (codingHistory.length * 5))}%
+                      <span className={`font-black ${isCertificateUnlocked ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        {isCertificateUnlocked ? `${calculatedReadinessIndex}%` : '0% (Locked)'}
                       </span>
                     </div>
                     <div className="w-full sm:w-48 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(95, 45 + (testHistory.length * 5) + (codingHistory.length * 5))}%` }}
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isCertificateUnlocked ? 'bg-gradient-to-r from-emerald-500 to-teal-400' : 'bg-slate-300 dark:bg-slate-700 w-0'
+                        }`}
+                        style={{ width: `${calculatedReadinessIndex}%` }}
                       />
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1">Based on test audits & live compilers</p>
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      {isCertificateUnlocked ? 'Based on test audits & live compilers' : '🔒 Prerequisite: Complete 1 task to generate certificate'}
+                    </p>
                   </div>
 
                   <button
                     onClick={() => { playSound('click'); setShowCertModal(true); }}
-                    className="w-full sm:w-auto text-center px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer shrink-0"
+                    className={`w-full sm:w-auto text-center px-3.5 py-2 rounded-xl text-white font-black text-xs shadow-md transition cursor-pointer shrink-0 ${
+                      isCertificateUnlocked
+                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-600/20'
+                        : 'bg-slate-700 hover:bg-slate-600 shadow-slate-700/20 border border-slate-600 text-slate-300'
+                    }`}
                   >
-                    🏆 Certificate
+                    {isCertificateUnlocked ? '🏆 Certificate' : '🔒 Certificate (Locked)'}
                   </button>
                 </div>
               </div>
@@ -960,19 +989,27 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-bl-full pointer-events-none" />
                   <div className="flex justify-between items-start">
                     <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
-                      🏆
+                      {isCertificateUnlocked ? '🏆' : '🔒'}
                     </div>
-                    <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 font-mono">
-                      Verified Status
+                    <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full font-mono border ${
+                      isCertificateUnlocked 
+                        ? 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30'
+                        : 'bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/30'
+                    }`}>
+                      {isCertificateUnlocked ? 'Verified Status' : 'Task Required (0/1)'}
                     </span>
                   </div>
                   <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-4 tracking-tight">
-                    {Math.min(95, 45 + (testHistory.length * 5) + (codingHistory.length * 5))}%
+                    {calculatedReadinessIndex}%
                   </p>
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
-                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Readiness Score</span>
-                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                      <span>⚡ Claim Certificate ➔</span>
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                      {isCertificateUnlocked ? 'Readiness Score' : 'Status: Locked'}
+                    </span>
+                    <span className={`text-[11px] font-bold flex items-center gap-1 ${
+                      isCertificateUnlocked ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'
+                    }`}>
+                      <span>{isCertificateUnlocked ? '⚡ Claim Certificate ➔' : '🔒 Complete 1 Task ➔'}</span>
                     </span>
                   </div>
                 </div>
@@ -1794,7 +1831,13 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
         isOpen={showCertModal} 
         onClose={() => setShowCertModal(false)} 
         student={user} 
-        readinessIndex={Math.min(95, 45 + (testHistory.length * 5) + (codingHistory.length * 5))} 
+        readinessIndex={calculatedReadinessIndex} 
+        isUnlocked={isCertificateUnlocked}
+        completedTasksCount={completedTasksCount}
+        onStartTask={(tab) => {
+          setActiveTab(tab);
+          setActiveTest(null);
+        }}
       />
     </div>
   );

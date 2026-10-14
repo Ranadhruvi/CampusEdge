@@ -4,7 +4,8 @@ import { playSound } from './soundEffects';
 
 export default function GamificationHeader({ 
   onStreakClick, 
-  onClaimCert 
+  onClaimCert,
+  isUnlocked = false
 }) {
   const [streakData, setStreakData] = useState(streakManager.getState());
 
@@ -91,10 +92,14 @@ export default function GamificationHeader({
           {/* Verified Certificate CTA */}
           <button
             onClick={() => { playSound('click'); onClaimCert && onClaimCert(); }}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-500/20 transition transform hover:scale-105 flex items-center justify-center gap-2 cursor-pointer shrink-0"
+            className={`w-full sm:w-auto px-4 py-2.5 rounded-2xl text-white font-black text-xs shadow-md transition transform hover:scale-105 flex items-center justify-center gap-2 cursor-pointer shrink-0 ${
+              isUnlocked
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/20'
+                : 'bg-slate-700 hover:bg-slate-600 shadow-slate-700/20 border border-slate-600'
+            }`}
           >
-            <span>🏆</span>
-            <span>Digital Certificate</span>
+            <span>{isUnlocked ? '🏆' : '🔒'}</span>
+            <span>{isUnlocked ? 'Digital Certificate' : 'Certificate (Locked)'}</span>
           </button>
         </div>
       </div>

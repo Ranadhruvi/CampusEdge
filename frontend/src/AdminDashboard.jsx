@@ -202,6 +202,8 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
   const [isLiveSyncing, setIsLiveSyncing] = useState(false);
 
   useEffect(() => {
+    if (adminUser?.role !== 'admin') return;
+
     fetchQuestions();
     fetchAllStudentActivity();
     fetchStudentsList();
@@ -803,6 +805,29 @@ export default function AdminDashboard({ user: propUser, onLogout, onViewLanding
     { id: 'interviews', label: 'AI Interview Q&A', icon: '🎙️', count: interviews.length },
     { id: 'drives', label: 'Placement Drives', icon: '🏢' },
   ];
+
+  if (adminUser?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6 text-center select-none font-sans">
+        <div className="w-16 h-16 rounded-3xl bg-rose-500/10 border border-rose-500/30 text-rose-400 mx-auto flex items-center justify-center text-3xl mb-4 shadow-lg shadow-rose-950/40">
+          🛑
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-wider text-rose-400 bg-rose-950/80 border border-rose-500/40 px-3 py-1 rounded-full inline-block mb-2">
+          Access Restricted
+        </span>
+        <h1 className="text-xl font-black mb-2">Administrator Clearance Required</h1>
+        <p className="text-xs text-slate-400 max-w-sm mb-6 leading-relaxed">
+          The Campus Operations Deck is strictly restricted to university administrators. Your current session does not possess administrator clearance.
+        </p>
+        <button
+          onClick={() => { window.location.href = '/dashboard'; }}
+          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs px-6 py-3 rounded-xl cursor-pointer shadow-md transition"
+        >
+          ← Return to Student Dashboard
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex font-sans selection:bg-indigo-600 selection:text-white relative">
