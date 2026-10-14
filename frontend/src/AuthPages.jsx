@@ -378,6 +378,11 @@ export default function AuthPages({ initialMode = 'login', onAuthSuccess, curren
                   <p className="text-[11px] text-slate-500 mt-1">
                     Enter your registered email address or 10-digit mobile number to receive your 6-digit recovery code.
                   </p>
+                  <div className="mt-2.5 p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/50 text-[11px] text-indigo-900 dark:text-indigo-200 space-y-1">
+                    <p className="font-bold flex items-center gap-1"><span>💡</span> Account Recovery Tip:</p>
+                    <p className="text-slate-600 dark:text-slate-400">• Enter your registered email address (e.g. your university or college email) to reset anytime.</p>
+                    <p className="text-slate-600 dark:text-slate-400">• Linked accounts or test student accounts can also use mobile: <code className="font-mono font-bold text-indigo-700 dark:text-indigo-300">9876543210</code>.</p>
+                  </div>
                 </div>
 
                 <button

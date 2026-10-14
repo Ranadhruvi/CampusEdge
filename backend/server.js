@@ -206,6 +206,7 @@ const { seed: seedQuestionBank } = require('./scripts/seedQuestions');
       ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(25);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_otp VARCHAR(6);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_otp_expires TIMESTAMP;
+      UPDATE users SET phone = '9876543210' WHERE (LOWER(email) LIKE '%dhruvi%' OR LOWER(email) LIKE '%maahi%') AND phone IS NULL;
       ALTER TABLE test_history ADD COLUMN IF NOT EXISTS tab_switches INT DEFAULT 0;
       ALTER TABLE test_history ADD COLUMN IF NOT EXISTS tab_switch_logs JSONB;
       ALTER TABLE interview_history ADD COLUMN IF NOT EXISTS tab_switches INT DEFAULT 0;
@@ -688,9 +689,10 @@ app.put('/api/admin/change-role/:id', authenticateToken, requireAdmin, async (re
 app.use('/api/questions', questionRoutes);
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const backendBaseUrl = process.env.BACKEND_URL || (process.env.RENDER ? 'https://campusedge-backend.onrender.com' : 'http://localhost:5000');
+const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER) || (process.env.PORT && process.env.PORT !== '5000');
+const backendBaseUrl = process.env.BACKEND_URL || (isProduction ? 'https://campusedge-backend.onrender.com' : 'http://localhost:5000');
 const callbackURL = process.env.CALLBACK_URL || `${backendBaseUrl}/api/auth/google/callback`;
-const clientBaseUrl = process.env.CLIENT_URL || (process.env.RENDER ? 'https://campus-edge-crzc.vercel.app' : 'http://localhost:5173');
+const clientBaseUrl = process.env.CLIENT_URL || (isProduction ? 'https://campus-edge-crzc.vercel.app' : 'http://localhost:5173');
 
 if (googleClientId && googleClientSecret) {
   passport.use(new GoogleStrategy({

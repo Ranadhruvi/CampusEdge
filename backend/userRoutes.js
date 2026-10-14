@@ -72,7 +72,7 @@ router.get('/admin/students', authenticateToken, requireAdmin, async (req, res) 
 // UPDATE PROFILE (Protected: Self or Admin)
 // ==========================================
 router.put('/update-profile', authenticateToken, async (req, res) => {
-  const { email, name, dob, hometown, address, currentPassword, newPassword } = req.body;
+  const { email, name, dob, hometown, address, currentPassword, newPassword, phone } = req.body;
   try {
     // Only allow updating own profile unless admin
     if (req.user.email !== email && req.user.role !== 'admin') {
@@ -98,18 +98,18 @@ router.put('/update-profile', authenticateToken, async (req, res) => {
       const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
       await pool.query(
-        `UPDATE users SET name = COALESCE($1, name), dob = COALESCE($2, dob), hometown = COALESCE($3, hometown), address = COALESCE($4, address), password = $5 WHERE email = $6`,
-        [name, dob || null, hometown || null, address || null, hashedNewPassword, email]
+        `UPDATE users SET name = COALESCE($1, name), dob = COALESCE($2, dob), hometown = COALESCE($3, hometown), address = COALESCE($4, address), phone = COALESCE($5, phone), password = $6 WHERE email = $7`,
+        [name, dob || null, hometown || null, address || null, phone || null, hashedNewPassword, email]
       );
     } else {
       await pool.query(
-        `UPDATE users SET name = COALESCE($1, name), dob = COALESCE($2, dob), hometown = COALESCE($3, hometown), address = COALESCE($4, address) WHERE email = $5`,
-        [name, dob || null, hometown || null, address || null, email]
+        `UPDATE users SET name = COALESCE($1, name), dob = COALESCE($2, dob), hometown = COALESCE($3, hometown), address = COALESCE($4, address), phone = COALESCE($5, phone) WHERE email = $6`,
+        [name, dob || null, hometown || null, address || null, phone || null, email]
       );
     }
 
     const updatedUser = await pool.query(
-      `SELECT id, name, email, dob, hometown, address, role FROM users WHERE email = $1`,
+      `SELECT id, name, email, dob, hometown, address, role, phone FROM users WHERE email = $1`,
       [email]
     );
 

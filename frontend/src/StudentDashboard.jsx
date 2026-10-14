@@ -153,6 +153,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
 
   // Editable Profile Form State
   const [editName, setEditName] = useState(user?.name || '');
+  const [editPhone, setEditPhone] = useState(user?.phone || '');
   const [editDob, setEditDob] = useState(user?.dob || '');
   const [editHometown, setEditHometown] = useState(user?.hometown || '');
   const [editAddress, setEditAddress] = useState(user?.address || '');
@@ -253,6 +254,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
         body: JSON.stringify({
           email: userEmail,
           name: editName.trim(),
+          phone: editPhone.trim(),
           dob: editDob,
           hometown: editHometown.trim(),
           address: editAddress.trim(),
@@ -706,6 +708,7 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                         onClick={() => {
                           setShowProfileMenu(false);
                           setEditName(user?.name || '');
+                          setEditPhone(user?.phone || '');
                           setEditDob(user?.dob || '');
                           setEditHometown(user?.hometown || '');
                           setEditAddress(user?.address || '');
@@ -846,6 +849,12 @@ export default function StudentDashboard({ user: propUser, onLogout, onViewLandi
                   <div>
                     <label className="block font-bold text-slate-600 dark:text-slate-400 mb-1">Full Legal Name</label>
                     <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} required className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl font-medium outline-none focus:border-indigo-500" />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-600 dark:text-slate-400 mb-1">
+                      Mobile Number <span className="text-slate-400 font-normal">(for SMS drive alerts & password recovery)</span>
+                    </label>
+                    <input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="e.g. 9876543210" className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl font-medium outline-none focus:border-indigo-500" />
                   </div>
                   <div>
                     <label className="block font-bold text-slate-600 dark:text-slate-400 mb-1">Current City / Location (Address)</label>

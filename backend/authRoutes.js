@@ -286,12 +286,12 @@ router.post('/forgot-password', rateLimiter({ max: 15, message: 'Too many reset 
       userRes = await pool.query(
         `SELECT id, name, email, phone, role, password FROM users 
          WHERE phone = $1 
-            OR REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '+', '') LIKE '%' || $2 || '%'`,
+            OR REPLACE(REPLACE(REPLACE(COALESCE(phone, ''), ' ', ''), '-', ''), '+', '') LIKE '%' || $2 || '%'`,
         [rawInput, cleanDigits.slice(-10)]
       );
     } else {
       userRes = await pool.query(
-        `SELECT id, name, email, phone, role, password FROM users WHERE LOWER(email) = LOWER($1) OR phone = $1`,
+        `SELECT id, name, email, phone, role, password FROM users WHERE LOWER(email) = LOWER($1) OR phone = $1 OR LOWER(name) = LOWER($1)`,
         [rawInput.toLowerCase()]
       );
     }
@@ -469,7 +469,7 @@ router.post('/reset-password', rateLimiter({ max: 20, message: 'Too many attempt
 // ==========================================
 router.get('/google', (req, res, next) => {
   const role = req.query.role || 'student';
-  const clientUrl = req.query.clientUrl || process.env.CLIENT_URL || 'http://localhost:5173';
+  const clientUrl = req.query.clientUrl || process.env.CLIENT_URL || (process.env.RENDER ? 'https://campus-edge-crzc.vercel.app' : 'http://localhost:5173');
   try {
     if (passport && passport._strategies && passport._strategies.google) {
       return passport.authenticate('google', {
@@ -485,7 +485,7 @@ router.get('/google', (req, res, next) => {
 });
 
 router.get('/google/callback', (req, res, next) => {
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const clientUrl = process.env.CLIENT_URL || (process.env.RENDER ? 'https://campus-edge-crzc.vercel.app' : 'http://localhost:5173');
   try {
     if (passport && passport._strategies && passport._strategies.google) {
       return passport.authenticate('google', { session: false }, (err, user, info) => {
